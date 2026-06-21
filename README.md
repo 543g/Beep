@@ -25,12 +25,12 @@ Universal multi-tool for Roblox executors featuring combat automation, visual en
 
 ### Quick Loadstring
 ```lua
-loadstring(game:HttpGet("https://raw.githubusercontent.com/awjz/beep/main/Beep.lua"))()
+loadstring(game:HttpGet("https://raw.githubusercontent.com/awjz/beep-tool/main/Beep.lua"))()
 ```
 
 ### Alternative Loader
 ```lua
-loadstring(game:HttpGet("https://raw.githubusercontent.com/awjz/beep/main/loader.lua"))()
+loadstring(game:HttpGet("https://raw.githubusercontent.com/awjz/beep-tool/main/loader.lua"))()
 ```
 
 ## Usage
