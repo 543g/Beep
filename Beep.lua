@@ -443,8 +443,8 @@ function Visuals:DrawESPOnCharacter(player)
         local head = char:WaitForChild("Head", 10) or char:FindFirstChildOfClass("MeshPart") or char:WaitForChild("HumanoidRootPart", 10)
         if not head then return end
         
-        local bGui = UI:Create("BillboardGui", {Size = UDim2.new(0, 150, 0, 40), StudsOffset = Vector3.new(0, 3, 0), AlwaysOnTop = true, ResetOnSpawn = true, Parent = head})
-        local label = UI:Create("TextLabel", {Size = UDim2.new(1, 0, 1, 0), BackgroundTransparency = 1, TextColor3 = Color3.new(1, 1, 1), Font = Enum.Font.GothamBold, TextSize = 11, TextStrokeTransparency = 0.5, Parent = bGui})
+        local bGui = UI:Create("BillboardGui", {Size = UDim2.new(0, 150, 0, 40), StudsOffset = Vector3.new(0, 3, 0), AlwaysOnTop = true, ResetOnSpawn = true, Enabled = false, Parent = head})
+        local label = UI:Create("TextLabel", {Size = UDim2.new(1, 0, 1, 0), BackgroundTransparency = 1, TextColor3 = Color3.new(1, 1, 1), Font = Enum.Font.GothamBold, TextSize = 11, TextStrokeTransparency = 0.5, Text = "", Parent = bGui})
         
         local trackingParts = {}
         local function scanParts(rootPart)
@@ -459,6 +459,9 @@ function Visuals:DrawESPOnCharacter(player)
         task.spawn(function()
             while bGui.Parent and char:IsDescendantOf(Workspace) and UI.Active do
                 local visualsEnabled = Config.Visuals.Enabled
+                
+                -- Control BillboardGui visibility
+                bGui.Enabled = visualsEnabled
                 
                 for _, box in pairs(trackingParts) do
                     if box and box.Parent then
