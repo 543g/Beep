@@ -562,26 +562,28 @@ end)
 RunService.Stepped:Connect(function()
     if not UI.Active then return end
     local char = LocalPlayer.Character
-    local hum = char and char:FindFirstChildOfClass("Humanoid")
-    if hum then
-        if Config.Physics.SpeedEnabled then
-            hum.WalkSpeed = Config.Physics.WalkSpeed
+    if not char then return end
+    local hum = char:FindFirstChildOfClass("Humanoid")
+    if not hum then return end
+    
+    -- Only modify WalkSpeed if Speed is enabled
+    if Config.Physics.SpeedEnabled then
+        hum.WalkSpeed = Config.Physics.WalkSpeed
+    end
+    
+    -- Only modify Jump if Jump is enabled
+    if Config.Physics.JumpEnabled then
+        if hum.UseJumpPower then
+            hum.JumpPower = Config.Physics.JumpPower
+        else
+            hum.JumpHeight = Config.Physics.JumpPower / 10
         end
-        
-        if Config.Physics.JumpEnabled then
-            -- Handle both JumpPower and JumpHeight (new Humanoid system)
-            if hum.UseJumpPower then
-                hum.JumpPower = Config.Physics.JumpPower
-            else
-                -- Convert JumpPower to approximate JumpHeight
-                hum.JumpHeight = Config.Physics.JumpPower / 10
-            end
-        end
-        
-        if Config.Physics.NoClip then
-            for _, part in pairs(char:GetDescendants()) do
-                if part:IsA("BasePart") then part.CanCollide = false end
-            end
+    end
+    
+    -- Only apply NoClip if enabled
+    if Config.Physics.NoClip then
+        for _, part in pairs(char:GetDescendants()) do
+            if part:IsA("BasePart") then part.CanCollide = false end
         end
     end
 end)
