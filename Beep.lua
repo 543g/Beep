@@ -43,7 +43,7 @@ local Config = {
         ShowFOV = true
     },
     Physics = {
-        WalkSpeed = 16,
+        Speed = 1,
         JumpPower = 100,
         NoClip = false,
         Fly = false,
@@ -219,7 +219,7 @@ Instance.new("UICorner", FOVContainer).CornerRadius = UDim.new(1, 0)
 
 RunService.RenderStepped:Connect(function()
     if not UI.Active then return end
-    if Config.Combat.ShowFOV and UI.Visible then
+    if Config.Combat.ShowFOV then
         FOVContainer.Visible = true
         FOVContainer.Size = UDim2.new(0, Config.Combat.FOV * 2, 0, Config.Combat.FOV * 2)
         FOVContainer.Position = UDim2.new(0, Mouse.X, 0, Mouse.Y + 36)
@@ -569,9 +569,13 @@ RunService.Stepped:Connect(function()
     local hum = char:FindFirstChildOfClass("Humanoid")
     if not hum then return end
     
-    -- Only modify WalkSpeed if Speed is enabled
-    if Config.Physics.SpeedEnabled then
-        hum.WalkSpeed = Config.Physics.WalkSpeed
+    -- Speed Hack using CFrame movement
+    if Config.Physics.SpeedEnabled and hum.MoveDirection.Magnitude > 0 then
+        local rootPart = char:FindFirstChild("HumanoidRootPart")
+        if rootPart then
+            local moveDirection = hum.MoveDirection
+            rootPart.CFrame = rootPart.CFrame + (moveDirection * Config.Physics.Speed * 0.5)
+        end
     end
     
     -- Only modify Jump if Jump is enabled
@@ -609,8 +613,8 @@ UI:CreateToggle(VisualsPage, "Show IDs", "Visuals", "IDs")
 UI:CreateToggle(VisualsPage, "3D Boxes / Chams", "Visuals", "Skeletons")
 
 -- Physics Controls
-UI:CreateToggle(PhysicsPage, "Enable Speed Boost", "Physics", "SpeedEnabled")
-UI:CreateSlider(PhysicsPage, "Walk Speed", 16, 150, "Physics", "WalkSpeed")
+UI:CreateToggle(PhysicsPage, "Enable Speed Hack", "Physics", "SpeedEnabled")
+UI:CreateSlider(PhysicsPage, "Speed Multiplier", 1, 5, "Physics", "Speed")
 UI:CreateToggle(PhysicsPage, "Enable Jump Boost", "Physics", "JumpEnabled")
 UI:CreateSlider(PhysicsPage, "Jump Power", 50, 300, "Physics", "JumpPower")
 UI:CreateToggle(PhysicsPage, "NoClip", "Physics", "NoClip")
