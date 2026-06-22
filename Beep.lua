@@ -149,10 +149,10 @@ local Sidebar = UI:Create("Frame", {
 })
 Instance.new("UICorner", Sidebar).CornerRadius = UDim.new(0, 12)
 
--- Pages Container
+-- Pages Container (Adjusted to be below search bar)
 local Container = UI:Create("Frame", {
-    Size = UDim2.new(1, -170, 1, -80), 
-    Position = UDim2.new(0, 170, 0, 10),
+    Size = UDim2.new(1, -170, 1, -135), 
+    Position = UDim2.new(0, 170, 0, 95),
     BackgroundTransparency = 1, 
     ZIndex = 2,
     Parent = Main
@@ -237,10 +237,10 @@ task.spawn(function()
     end
 end)
 
--- Search Bar
+-- Search Bar (Below the menu, doesn't cover content)
 local SearchBar = UI:Create("Frame", {
-    Size = UDim2.new(0, 200, 0, 30),
-    Position = UDim2.new(1, -210, 0, 10),
+    Size = UDim2.new(0, 450, 0, 35),
+    Position = UDim2.new(0, 170, 0, 50),
     BackgroundColor3 = Color3.fromRGB(22, 18, 32),
     ZIndex = 15,
     Parent = Main
@@ -249,37 +249,85 @@ Instance.new("UICorner", SearchBar).CornerRadius = UDim.new(0, 6)
 UI:Create("UIStroke", {Color = Config.Visuals.Accent, Thickness = 1, Transparency = 0.5, Parent = SearchBar})
 
 local SearchBox = UI:Create("TextBox", {
-    Size = UDim2.new(1, -10, 1, -6),
-    Position = UDim2.new(0, 5, 0, 3),
+    Size = UDim2.new(1, -10, 1, -10),
+    Position = UDim2.new(0, 5, 0, 5),
     BackgroundTransparency = 1,
     Text = "",
-    PlaceholderText = "Search hacks...",
+    PlaceholderText = "🔍 Search any hack (works across all tabs)...",
     TextColor3 = Color3.new(1, 1, 1),
     PlaceholderColor3 = Color3.fromRGB(150, 140, 160),
     Font = Enum.Font.Gotham,
-    TextSize = 12,
+    TextSize = 13,
     TextXAlignment = Enum.TextXAlignment.Left,
     ClearTextOnFocus = false,
     ZIndex = 16,
     Parent = SearchBar
 })
 
--- Search functionality
+-- Universal Search System (searches all tabs and shows results)
+local searchResults = {}
+
 SearchBox:GetPropertyChangedSignal("Text"):Connect(function()
     local searchText = SearchBox.Text:lower()
     
-    -- Search through all tabs
-    for _, tab in pairs(UI.Tabs) do
+    -- Clear previous results
+    searchResults = {}
+    
+    if searchText == "" then
+        -- Show all items
+        for _, tab in pairs(UI.Tabs) do
+            for _, child in pairs(tab:GetChildren()) do
+                if child:IsA("Frame") and child:FindFirstChildOfClass("TextLabel") then
+                    child.Visible = true
+                end
+            end
+        end
+        return
+    end
+    
+    -- Search through ALL tabs
+    for tabIndex, tab in pairs(UI.Tabs) do
         for _, child in pairs(tab:GetChildren()) do
             if child:IsA("Frame") and child:FindFirstChildOfClass("TextLabel") then
                 local label = child:FindFirstChildOfClass("TextLabel")
                 local text = label.Text:lower()
                 
-                if searchText == "" or text:find(searchText) then
+                if text:find(searchText) then
+                    -- Show this item
                     child.Visible = true
+                    table.insert(searchResults, {tab = tab, item = child, tabIndex = tabIndex, name = label.Text})
                 else
+                    -- Hide this item
                     child.Visible = false
                 end
+            end
+        end
+    end
+    
+    -- If results found, auto-switch to first tab with results
+    if #searchResults > 0 then
+        local firstResult = searchResults[1]
+        -- Hide all tabs
+        for _, t in pairs(Container:GetChildren()) do 
+            if t:IsA("ScrollingFrame") then 
+                t.Visible = false 
+            end 
+        end
+        -- Show the tab with the first result
+        firstResult.tab.Visible = true
+        
+        -- Update sidebar colors
+        local tabButtons = {}
+        for _, v in pairs(Sidebar:GetChildren()) do
+            if v:IsA("TextButton") then
+                table.insert(tabButtons, v)
+            end
+        end
+        for i, btn in pairs(tabButtons) do
+            if i == firstResult.tabIndex then
+                btn.TextColor3 = Config.Visuals.Accent
+            else
+                btn.TextColor3 = Color3.fromRGB(150, 140, 160)
             end
         end
     end
