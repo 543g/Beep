@@ -734,7 +734,19 @@ InfiniteJumpConnection = UserInputService.InputBegan:Connect(function(input, gam
     end
 end)
 
--- Kill Aura System (with Auto Aim)
+-- Kill Aura System (with Auto Aim + Auto Shoot + Team Check)
+local lastShootTime = 0
+local shootDelay = 0.1 -- Delay between shots
+
+local function IsEnemy(player)
+    -- Team check - if both players have teams, check if different
+    if LocalPlayer.Team and player.Team then
+        return LocalPlayer.Team ~= player.Team
+    end
+    -- If no teams, everyone is enemy except yourself
+    return player ~= LocalPlayer
+end
+
 RunService.Heartbeat:Connect(function()
     if not Config.Misc.KillAura or not UI.Active then return end
     local char = LocalPlayer.Character
@@ -747,7 +759,7 @@ RunService.Heartbeat:Connect(function()
     
     -- Find closest enemy in range
     for _, player in pairs(Players:GetPlayers()) do
-        if player ~= LocalPlayer and player.Character then
+        if IsEnemy(player) and player.Character then
             local enemyRoot = player.Character:FindFirstChild("HumanoidRootPart")
             local enemyHum = player.Character:FindFirstChildOfClass("Humanoid")
             if enemyRoot and enemyHum and enemyHum.Health > 0 then
@@ -768,10 +780,21 @@ RunService.Heartbeat:Connect(function()
             local targetCFrame = CFrame.new(Camera.CFrame.Position, targetPart.Position)
             Camera.CFrame = targetCFrame
             
-            -- Activate weapon
-            local tool = char:FindFirstChildOfClass("Tool")
-            if tool then
-                tool:Activate()
+            -- Auto shoot with delay
+            local currentTime = tick()
+            if currentTime - lastShootTime >= shootDelay then
+                local tool = char:FindFirstChildOfClass("Tool")
+                if tool then
+                    tool:Activate()
+                    lastShootTime = currentTime
+                    
+                    -- Also try to click (for gun games)
+                    task.spawn(function()
+                        mouse1press()
+                        task.wait(0.05)
+                        mouse1release()
+                    end)
+                end
             end
         end
     end
