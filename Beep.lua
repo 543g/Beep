@@ -1,6 +1,9 @@
 -- Beep Multi-Tool Framework
 -- Universal ESP, Aimbot & Physics Controller
 
+-- VERSION CONTROL (Update this for each new version)
+local BEEP_VERSION = "v3.1.1"
+
 local StartTime = tick()
 if not game:IsLoaded() then
     repeat task.wait(0.1) until game:IsLoaded() or (tick() - StartTime) > 30
@@ -157,7 +160,7 @@ local ProjectLabel = UI:Create("TextLabel", {
     Size = UDim2.new(0, 200, 0, 20),
     Position = UDim2.new(0, 15, 1, -25),
     BackgroundTransparency = 1,
-    Text = "Beep v3.1.1",
+    Text = "Beep " .. BEEP_VERSION,
     TextColor3 = Config.Visuals.Accent,
     Font = Enum.Font.GothamBold,
     TextSize = 13,
@@ -172,7 +175,7 @@ local Watermark = UI:Create("TextLabel", {
     Position = UDim2.new(0, 10, 0, 400),
     BackgroundColor3 = Color3.fromRGB(12, 10, 18),
     BackgroundTransparency = 0.3,
-    Text = "Beep v3.1.1 | FPS: 60 | Ping: 0ms",
+    Text = "Beep " .. BEEP_VERSION .. " | FPS: 60 | Ping: 0ms",
     TextColor3 = Color3.new(1, 1, 1),
     Font = Enum.Font.GothamBold,
     TextSize = 12,
@@ -223,7 +226,7 @@ task.spawn(function()
             local fps = math.floor(1 / RunService.RenderStepped:Wait())
             local ping = math.floor(game:GetService("Stats").Network.ServerStatsItem["Data Ping"]:GetValue())
             local time = os.date("%H:%M:%S")
-            Watermark.Text = string.format("Beep v3.1.1 | FPS: %d | Ping: %dms | %s", fps, ping, time)
+            Watermark.Text = string.format("Beep %s | FPS: %d | Ping: %dms | %s", BEEP_VERSION, fps, ping, time)
             Watermark.Visible = Config.Misc.Watermark
         else
             Watermark.Visible = false
