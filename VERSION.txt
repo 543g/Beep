@@ -1,6 +1,18 @@
-Beep Framework v3.4.0
+Beep Framework v3.4.1
 Release Date: June 22, 2026
-Build: Stable - RAGEBOT
+Build: Stable - RAGEBOT AUTO TP / FLY
+
+==============================================
+v3.4.1 - RAGEBOT AUTO TP / FLY
+==============================================
+🚀 El ragebot ahora se mueve hacia el enemigo automaticamente
+- Ragebot Auto TP/Fly to Enemy (toggle)
+- Ragebot Move Mode: Teleport (instantaneo) o Fly (vuela rapido)
+- Ragebot Fly Speed (20-500)
+- Ragebot Keep Distance (2-30 studs del enemigo)
+
+Tip: activa NoClip para atravesar paredes al moverte.
+Muy efectivo + muy detectable (client-side).
 
 ==============================================
 v3.4.0 - RAGEBOT (aimbot agresivo)

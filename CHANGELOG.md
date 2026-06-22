@@ -1,5 +1,29 @@
 # Beep Framework - Changelog
 
+## Version 3.4.1 (2026-06-22) - RAGEBOT AUTO TP / FLY
+
+### 🚀 NUEVO: Ragebot se mueve hacia el enemigo
+El ragebot ahora puede teletransportarse o volar a alta velocidad hacia cada objetivo para matarlo de cerca.
+
+**Nuevas opciones:**
+- **Ragebot Auto TP/Fly to Enemy** - activa el movimiento automático hacia el target
+- **Ragebot Move Mode** - selector: `Teleport` (instantáneo) o `Fly` (vuela rápido hacia el enemigo)
+- **Ragebot Fly Speed** - velocidad del modo Fly (20-500)
+- **Ragebot Keep Distance** - studs de distancia a mantener del enemigo (2-30), para no quedar dentro de él
+
+### ⚙️ CÓMO FUNCIONA
+- Mueve tu HumanoidRootPart hacia el objetivo elegido (según el Target Mode)
+- Teleport = aparece al lado del enemigo al instante
+- Fly = se desplaza rápido hacia él (más discreto que TP)
+- Resetea velocidad para evitar fling
+- Combina con Auto Shoot para matar al llegar
+
+### ⚠️ NOTA
+- Muy efectivo + muy detectable. El TP/fly es client-side; en juegos con anti-cheat de movimiento te puede patear.
+- Recomendado activar NoClip junto con esto para atravesar paredes al moverte.
+
+---
+
 ## Version 3.4.0 (2026-06-22) - RAGEBOT
 
 ### 🎯 NUEVO: RAGEBOT (aimbot agresivo)
