@@ -1,5 +1,25 @@
 # Beep Framework - Changelog
 
+## Version 3.5.1 (2026-06-22) - RAGEBOT HOLD-FIRE (más rápido en Rivals)
+
+### ⚡ Disparo continuo (mucho más rápido)
+Antes el ragebot "tap-eaba" cada disparo (activaba y soltaba), lento para armas automáticas.
+Ahora **mantiene el clic presionado** mientras tiene objetivo = disparo automático continuo, igual de rápido que en Arsenal.
+
+- **Hold-fire**: presiona el mouse mientras hay target (armas automáticas disparan sin parar)
+- **Tap del tool**: además activa el tool para armas semi-auto
+- **Suelta el clic** automáticamente cuando no hay objetivo o se apaga el ragebot
+
+### 🎮 Perfiles ajustados
+- **Rivals**: fire rate máximo (0.0) + hold-fire → mata mucho más rápido
+- **Arsenal**: igual, hold-fire máximo
+- Esto debería reducir que te disparen de vuelta (matas antes)
+
+### 💡 NOTA
+Si te siguen disparando, prueba activar **Auto TP/Fly** con Move Mode Fly para acercarte y matar más rápido, o baja el "Keep Distance".
+
+---
+
 ## Version 3.5.0 (2026-06-22) - RAGEBOT GAME PROFILES
 
 ### 🎮 NUEVO: Perfiles de juego para el Ragebot
