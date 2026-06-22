@@ -33,6 +33,8 @@ local Config = {
         Names = false,
         IDs = false,
         Skeletons = false,
+        Tracers = false,
+        HealthBars = false,
         Accent = Color3.fromRGB(140, 80, 255)
     },
     Combat = {
@@ -56,8 +58,6 @@ local Config = {
         JumpEnabled = false
     },
     Misc = {
-        Tracers = false,
-        HealthBars = false,
         Fullbright = false,
         InfiniteJump = false,
         FOVChanger = false,
@@ -162,9 +162,15 @@ CloseMenuBtn.MouseButton1Click:Connect(function()
     ESPObjects = {}
     
     -- Clean up tracers
-    if TracerFolder then
-        TracerFolder:Destroy()
+    for _, data in pairs(TracerConnections) do
+        if data.line then
+            pcall(function() data.line:Remove() end)
+        end
+        if data.connection then
+            data.connection:Disconnect()
+        end
     end
+    TracerConnections = {}
     
     UI.Screen:Destroy()
 end)
@@ -584,8 +590,7 @@ for _, p in pairs(Players:GetPlayers()) do Visuals:DrawESPOnCharacter(p) end
 Players.PlayerAdded:Connect(function(p) Visuals:DrawESPOnCharacter(p) end)
 
 -- Tracers System
-local TracerFolder = Instance.new("Folder", CoreGui)
-TracerFolder.Name = "BeepTracers"
+local TracerConnections = {}
 
 local function CreateTracer(player)
     if player == LocalPlayer then return end
@@ -594,27 +599,35 @@ local function CreateTracer(player)
         local rootPart = char:WaitForChild("HumanoidRootPart", 5)
         if not rootPart then return end
         
-        local attachment0 = Instance.new("Attachment", Camera)
-        local attachment1 = Instance.new("Attachment", rootPart)
-        local beam = Instance.new("Beam", TracerFolder)
+        local line = Drawing.new("Line")
+        line.Visible = false
+        line.Color = Color3.new(Config.Visuals.Accent.R, Config.Visuals.Accent.G, Config.Visuals.Accent.B)
+        line.Thickness = 1
+        line.Transparency = 1
         
-        beam.Attachment0 = attachment0
-        beam.Attachment1 = attachment1
-        beam.Color = ColorSequence.new(Config.Visuals.Accent)
-        beam.Width0 = 0.1
-        beam.Width1 = 0.1
-        beam.FaceCamera = true
-        beam.Enabled = false
-        
-        task.spawn(function()
-            while beam.Parent and char:IsDescendantOf(Workspace) and UI.Active do
-                beam.Enabled = Config.Misc.Tracers
-                task.wait(0.1)
+        local connection = RunService.RenderStepped:Connect(function()
+            if not UI.Active or not char:IsDescendantOf(Workspace) or not rootPart.Parent then
+                line:Remove()
+                connection:Disconnect()
+                return
             end
-            beam:Destroy()
-            attachment0:Destroy()
-            attachment1:Destroy()
+            
+            if Config.Visuals.Tracers then
+                local screenPos, onScreen = Camera:WorldToViewportPoint(rootPart.Position)
+                if onScreen then
+                    local screenSize = Camera.ViewportSize
+                    line.From = Vector2.new(screenSize.X / 2, screenSize.Y)
+                    line.To = Vector2.new(screenPos.X, screenPos.Y)
+                    line.Visible = true
+                else
+                    line.Visible = false
+                end
+            else
+                line.Visible = false
+            end
         end)
+        
+        table.insert(TracerConnections, {line = line, connection = connection})
     end
     
     if player.Character then task.spawn(function() setupTracer(player.Character) end) end
@@ -654,8 +667,8 @@ local function CreateHealthBar(player)
         
         task.spawn(function()
             while billboardGui.Parent and char:IsDescendantOf(Workspace) and UI.Active do
-                billboardGui.Enabled = Config.Misc.HealthBars
-                if Config.Misc.HealthBars then
+                billboardGui.Enabled = Config.Visuals.HealthBars
+                if Config.Visuals.HealthBars then
                     local healthPercent = hum.Health / hum.MaxHealth
                     healthBar.Size = UDim2.new(healthPercent, 0, 1, 0)
                     healthBar.BackgroundColor3 = Color3.new(1 - healthPercent, healthPercent, 0)
@@ -709,17 +722,19 @@ RunService.RenderStepped:Connect(function()
 end)
 
 -- Infinite Jump
-UserInputService.JumpRequest:Connect(function()
-    if Config.Misc.InfiniteJump and UI.Active then
+local InfiniteJumpConnection = nil
+InfiniteJumpConnection = UserInputService.InputBegan:Connect(function(input, gameProcessed)
+    if gameProcessed or not UI.Active then return end
+    if input.KeyCode == Enum.KeyCode.Space and Config.Misc.InfiniteJump then
         local char = LocalPlayer.Character
         local hum = char and char:FindFirstChildOfClass("Humanoid")
-        if hum then
+        if hum and hum:GetState() ~= Enum.HumanoidStateType.Swimming then
             hum:ChangeState(Enum.HumanoidStateType.Jumping)
         end
     end
 end)
 
--- Kill Aura System
+-- Kill Aura System (with Auto Aim)
 RunService.Heartbeat:Connect(function()
     if not Config.Misc.KillAura or not UI.Active then return end
     local char = LocalPlayer.Character
@@ -727,19 +742,36 @@ RunService.Heartbeat:Connect(function()
     local rootPart = char:FindFirstChild("HumanoidRootPart")
     if not rootPart then return end
     
+    local closestEnemy = nil
+    local closestDistance = Config.Misc.KillAuraRange
+    
+    -- Find closest enemy in range
     for _, player in pairs(Players:GetPlayers()) do
         if player ~= LocalPlayer and player.Character then
             local enemyRoot = player.Character:FindFirstChild("HumanoidRootPart")
             local enemyHum = player.Character:FindFirstChildOfClass("Humanoid")
             if enemyRoot and enemyHum and enemyHum.Health > 0 then
                 local distance = (rootPart.Position - enemyRoot.Position).Magnitude
-                if distance <= Config.Misc.KillAuraRange then
-                    -- Simulate attack - this works for most Roblox games
-                    local tool = char:FindFirstChildOfClass("Tool")
-                    if tool then
-                        tool:Activate()
-                    end
+                if distance <= Config.Misc.KillAuraRange and distance < closestDistance then
+                    closestEnemy = player
+                    closestDistance = distance
                 end
+            end
+        end
+    end
+    
+    -- Auto aim and attack closest enemy
+    if closestEnemy and closestEnemy.Character then
+        local targetPart = closestEnemy.Character:FindFirstChild("Head") or closestEnemy.Character:FindFirstChild("HumanoidRootPart")
+        if targetPart then
+            -- Auto aim to target
+            local targetCFrame = CFrame.new(Camera.CFrame.Position, targetPart.Position)
+            Camera.CFrame = targetCFrame
+            
+            -- Activate weapon
+            local tool = char:FindFirstChildOfClass("Tool")
+            if tool then
+                tool:Activate()
             end
         end
     end
@@ -868,6 +900,8 @@ UI:CreateToggle(VisualsPage, "Enable ESP", "Visuals", "Enabled")
 UI:CreateToggle(VisualsPage, "Show Names", "Visuals", "Names")
 UI:CreateToggle(VisualsPage, "Show IDs", "Visuals", "IDs")
 UI:CreateToggle(VisualsPage, "3D Boxes / Chams", "Visuals", "Skeletons")
+UI:CreateToggle(VisualsPage, "Tracers", "Visuals", "Tracers")
+UI:CreateToggle(VisualsPage, "Health Bars", "Visuals", "HealthBars")
 
 -- Physics Controls
 UI:CreateToggle(PhysicsPage, "Enable Speed Hack", "Physics", "SpeedEnabled")
@@ -887,13 +921,11 @@ UI:CreateSlider(PhysicsPage, "Fly Speed", 10, 500, "Physics", "FlySpeed")
 UI:CreateKeybind(PhysicsPage, "Fly Toggle Key", "Physics", "FlyKey")
 
 -- Misc Controls
-UI:CreateToggle(MiscPage, "Tracers", "Misc", "Tracers")
-UI:CreateToggle(MiscPage, "Health Bars", "Misc", "HealthBars")
 UI:CreateToggle(MiscPage, "Fullbright", "Misc", "Fullbright")
 UI:CreateToggle(MiscPage, "Infinite Jump", "Misc", "InfiniteJump")
 UI:CreateToggle(MiscPage, "FOV Changer", "Misc", "FOVChanger")
 UI:CreateSlider(MiscPage, "FOV Value", 70, 120, "Misc", "FOVValue")
-UI:CreateToggle(MiscPage, "Kill Aura", "Misc", "KillAura")
+UI:CreateToggle(MiscPage, "Kill Aura + Auto Aim", "Misc", "KillAura")
 UI:CreateSlider(MiscPage, "Kill Aura Range", 5, 50, "Misc", "KillAuraRange")
 
 -- Teleport to Player Section
