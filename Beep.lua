@@ -2,7 +2,7 @@
 -- Universal ESP, Aimbot & Physics Controller
 
 -- VERSION CONTROL (Update this for each new version)
-local BEEP_VERSION = "v3.2.1"
+local BEEP_VERSION = "v3.2.6"
 
 local StartTime = tick()
 if not game:IsLoaded() then
@@ -34,7 +34,7 @@ local Config = {
     Visuals = {
         Enabled = false,
         Names = false,
-        Distance = true,
+        Distance = false,
         IDs = false,
         Skeletons = false,
         SkeletonESP = false,
@@ -49,7 +49,7 @@ local Config = {
         FOV = 150,
         Smoothness = 0.5,
         TargetPart = "Head",
-        ShowFOV = true,
+        ShowFOV = false,
         LockKey = "Q",
         LockedTarget = nil,
         Triggerbot = false,
@@ -91,7 +91,6 @@ local Config = {
         RemoveFog = false,
         Watermark = true,
         ThemeColor = 1,
-        ESPToggleKey = "F1",
         NoClipToggleKey = "F2"
     },
     UI = {
@@ -484,6 +483,9 @@ function UI:CreateTab(name)
     return Page
 end
 
+-- Storage for toggle indicators (for keybind updates)
+local ToggleIndicators = {}
+
 function UI:CreateToggle(parent, text, configSection, configKey, callback)
     local Frame = UI:Create("Frame", {Size = UDim2.new(1, -10, 0, 40), BackgroundColor3 = Color3.fromRGB(22, 18, 32), ZIndex = 4, Parent = parent})
     Instance.new("UICorner", Frame).CornerRadius = UDim.new(0, 6)
@@ -498,6 +500,10 @@ function UI:CreateToggle(parent, text, configSection, configKey, callback)
     })
     Instance.new("UICorner", Indicator).CornerRadius = UDim.new(0, 6)
     
+    -- Store indicator reference for keybind updates
+    local key = configSection .. "." .. configKey
+    ToggleIndicators[key] = Indicator
+    
     Indicator.MouseButton1Click:Connect(function()
         if not UI.Active then return end
         local state = not Config[configSection][configKey]
@@ -506,6 +512,16 @@ function UI:CreateToggle(parent, text, configSection, configKey, callback)
         Indicator.Text = state and "[ ON ]" or "[ OFF ]"
         if callback then callback(state) end
     end)
+end
+
+-- Helper function to update toggle indicators from keybinds
+function UI:UpdateToggle(configSection, configKey, state)
+    local key = configSection .. "." .. configKey
+    local indicator = ToggleIndicators[key]
+    if indicator then
+        indicator.BackgroundColor3 = state and Config.Visuals.Accent or Color3.fromRGB(45, 35, 60)
+        indicator.Text = state and "[ ON ]" or "[ OFF ]"
+    end
 end
 
 function UI:CreateSlider(parent, text, min, max, configSection, configKey, callback)
@@ -790,10 +806,13 @@ UserInputService.InputBegan:Connect(function(input, gameProcessed)
         end
     end
     
-    -- Speed Hack Toggle
+    -- Speed Hack Toggle (only toggle OFF if enabled in menu first)
     if input.KeyCode.Name == Config.Physics.SpeedKey then
-        Config.Physics.SpeedEnabled = not Config.Physics.SpeedEnabled
-        UI:Notify(Config.Physics.SpeedEnabled and "Speed Hack: ON" or "Speed Hack: OFF")
+        if Config.Physics.SpeedEnabled then
+            Config.Physics.SpeedEnabled = false
+            UI:UpdateToggle("Physics", "SpeedEnabled", false)
+            UI:Notify("Speed Hack: OFF")
+        end
     end
 end)
 
@@ -991,36 +1010,17 @@ task.spawn(function()
     end
 end)
 
--- ESP Toggle Key (Activates main ESP features)
-UserInputService.InputBegan:Connect(function(input, gameProcessed)
-    if not UI.Active or gameProcessed then return end
-    
-    if input.KeyCode.Name == Config.Misc.ESPToggleKey then
-        local newState = not Config.Visuals.Enabled
-        Config.Visuals.Enabled = newState
-        
-        -- Also toggle most ESP features
-        if newState then
-            Config.Visuals.Names = true
-            Config.Visuals.Distance = true
-            Config.Visuals.SkeletonESP = true
-            Config.Visuals.Skeletons = true  -- 3D Boxes
-            Config.Visuals.Tracers = true
-            Config.Visuals.HealthBars = true
-            Config.Visuals.BoxESP = true  -- 2D Boxes
-        end
-        
-        UI:Notify(newState and "ESP: ON (All features enabled)" or "ESP: OFF")
-    end
-end)
-
 -- NoClip Toggle Key
 UserInputService.InputBegan:Connect(function(input, gameProcessed)
     if not UI.Active or gameProcessed then return end
     
     if input.KeyCode.Name == Config.Misc.NoClipToggleKey then
-        Config.Physics.NoClip = not Config.Physics.NoClip
-        UI:Notify(Config.Physics.NoClip and "NoClip: ON" or "NoClip: OFF")
+        -- Only toggle OFF if already enabled in menu
+        if Config.Physics.NoClip then
+            Config.Physics.NoClip = false
+            UI:UpdateToggle("Physics", "NoClip", false)
+            UI:Notify("NoClip: OFF")
+        end
     end
 end)
 
@@ -1657,12 +1657,11 @@ end
 UserInputService.InputBegan:Connect(function(input, gameProcessed)
     if not UI.Active or gameProcessed then return end
     if input.KeyCode.Name == Config.Physics.FlyKey then
-        Config.Physics.Fly = not Config.Physics.Fly
+        -- Only toggle OFF if already enabled in menu
         if Config.Physics.Fly then
-            EnableFly()
-            UI:Notify("Fly Mode: ON")
-        else
+            Config.Physics.Fly = false
             DisableFly()
+            UI:UpdateToggle("Physics", "Fly", false)
             UI:Notify("Fly Mode: OFF")
         end
     end
@@ -1769,7 +1768,6 @@ UI:CreateToggle(MiscPage, "Anti-AFK", "Misc", "AntiAFK")
 UI:CreateToggle(MiscPage, "Fullbright", "Misc", "Fullbright")
 UI:CreateToggle(MiscPage, "FOV Changer", "Misc", "FOVChanger")
 UI:CreateSlider(MiscPage, "FOV Value", 70, 120, "Misc", "FOVValue")
-UI:CreateKeybind(MiscPage, "ESP Toggle Key", "Misc", "ESPToggleKey")
 UI:CreateKeybind(MiscPage, "NoClip Toggle Key", "Misc", "NoClipToggleKey")
 
 -- Theme Changer
@@ -1986,14 +1984,53 @@ ExitCheatBtn.MouseButton1Click:Connect(function()
     end
     SkeletonConnections = {}
     
+    -- Clean up ALL BillboardGui (Health Bars, Name Tags, etc.)
+    for _, player in pairs(Players:GetPlayers()) do
+        if player.Character then
+            for _, part in pairs(player.Character:GetDescendants()) do
+                if part:IsA("BillboardGui") then
+                    pcall(function() part:Destroy() end)
+                end
+            end
+        end
+    end
+    
+    -- Clean up Head Dots (any BillboardGui in Workspace)
+    for _, descendant in pairs(Workspace:GetDescendants()) do
+        if descendant:IsA("BillboardGui") and descendant.Name:find("Beep") then
+            pcall(function() descendant:Destroy() end)
+        end
+    end
+    
+    -- Clean up any FOV Circle
+    if FOVContainer then
+        pcall(function() FOVContainer:Destroy() end)
+        FOVContainer = nil
+    end
+    if FOVStroke then
+        pcall(function() FOVStroke:Destroy() end)
+        FOVStroke = nil
+    end
+    
     -- Destroy the UI completely
     UI.Screen:Destroy()
+    
+    -- Clear Watermark
+    if Watermark then
+        pcall(function() Watermark:Destroy() end)
+        Watermark = nil
+    end
     
     -- Clear global variables
     UI = nil
     Config = nil
     Combat = nil
     Visuals = nil
+    ESPObjects = nil
+    TracerConnections = nil
+    BoxConnections = nil
+    SkeletonConnections = nil
+    ToggleIndicators = nil
     
     print("[Beep] Cheat exited successfully. No trace left.")
 end)

@@ -1,5 +1,167 @@
 # Beep Framework - Changelog
 
+## Version 3.2.6 (2026-06-21) - REMOVED ESP KEYBIND
+
+### 🗑️ REMOVED
+- **ESP Toggle Key (F1)** - Completamente eliminado
+  - ❌ Keybind F1 removido del código
+  - ❌ Configuración ESPToggleKey eliminada
+  - ❌ Input handler del ESP toggle eliminado
+  - ❌ Opción "ESP Toggle Key" removida del menú Misc
+  - Ya no hay forma de apagar ESP con keybind
+
+### ✅ REMAINING KEYBINDS
+Solo quedan 3 keybinds activos:
+- **E** - Fly Toggle (solo apaga si Fly está ON en menú)
+- **LeftControl** - Speed Toggle (solo apaga si Speed está ON en menú)
+- **F2** - NoClip Toggle (solo apaga si NoClip está ON en menú)
+
+### 🎯 WHY?
+- Simplificación del sistema de keybinds
+- ESP se controla únicamente desde el menú ahora
+- Menos complejidad, más control manual
+
+---
+
+## Version 3.2.5 (2026-06-21) - CLEAN START
+
+### ✨ CLEAN START ON LAUNCH
+- **All modules disabled by default** - Al abrir el cheat, TODO está OFF excepto Watermark
+  - ✅ Watermark: ON (único módulo activo por defecto)
+  - ❌ ESP: OFF
+  - ❌ Show Distance: OFF (antes ON, ahora OFF)
+  - ❌ Show FOV Circle: OFF (antes ON, ahora OFF)
+  - ❌ All Combat features: OFF
+  - ❌ All Visual features: OFF
+  - ❌ All Physics features: OFF
+  - ❌ All Misc features: OFF (excepto Watermark)
+
+### 🎯 WHY THIS CHANGE?
+- **Clean startup** - Cheat inicia completamente limpio
+- **Manual control** - Usuario activa solo lo que necesita
+- **No surprises** - Sin features activas sin tu consentimiento
+- **Better security** - Nada activado automáticamente
+- **Performance** - Solo corre lo que activas
+
+### 📝 CHANGES MADE
+- `Config.Visuals.Distance` changed from `true` to `false`
+- `Config.Combat.ShowFOV` changed from `true` to `false`
+- All other modules already `false` by default
+
+### ✅ STARTUP BEHAVIOR
+**When you load the cheat:**
+1. UI opens
+2. Only Watermark is visible (bottom left)
+3. ALL features are OFF
+4. You manually enable what you need
+
+**Example workflow:**
+1. Load cheat → Everything OFF except Watermark
+2. Open menu (INSERT)
+3. Go to Visual tab → Enable ESP features you want
+4. Go to Combat tab → Enable Aim Assist if needed
+5. Go to Physics tab → Enable Speed/Fly if needed
+6. Use features → Everything under your control
+
+---
+
+## Version 3.2.4 (2026-06-21) - FIXED KEYBIND SECURITY
+
+### 🔒 SECURITY FIX
+- **Keybind Security Restored** - Keybinds ya NO pueden activar features sin habilitarlas en menú primero
+  - **F1 (ESP)** - Solo apaga ESP si ya está ON en menú
+  - **F2 (NoClip)** - Solo apaga NoClip si ya está ON en menú
+  - **LeftControl (Speed)** - Solo apaga Speed si ya está ON en menú
+  - **E (Fly)** - Solo apaga Fly si ya está ON en menú
+  - Previene activación accidental o no autorizada via keybinds
+  
+### ✨ MAINTAINED FEATURES
+- **Visual Sync** - Los toggles en el menú aún se actualizan cuando usas keybinds
+  - Cuando apagas con keybind, el toggle en el menú cambia a OFF visualmente
+  - Sincronización perfecta entre keybinds y UI
+  
+### 🎯 CORRECT BEHAVIOR NOW
+- **Step 1**: Debes activar feature en el menú PRIMERO
+- **Step 2**: Luego puedes usar keybind para apagarla rápidamente
+- **Step 3**: Para volver a activarla, abre el menú de nuevo
+- **Result**: Mayor control y seguridad
+
+### 📝 TECHNICAL CHANGES
+- Reverted keybinds to "only turn OFF" behavior
+- Maintained visual toggle sync system
+- All keybinds check if feature is enabled before allowing toggle
+- Visual feedback still updates menu toggles when keybinds are used
+
+---
+
+## Version 3.2.3 (2026-06-21) - UI SYNC & CLEANUP EDITION
+
+### ✨ NEW FEATURES
+- **Visual Toggle Sync** - Keybinds ahora actualizan los toggles visuales en el menú
+  - Presiona F1 y verás todos los ESP toggles cambiar en el menú
+  - Presiona E y verás el Fly toggle cambiar en el menú
+  - Presiona LeftControl y verás el Speed toggle cambiar en el menú
+  - Presiona F2 y verás el NoClip toggle cambiar en el menú
+  - Sincronización perfecta entre keybinds y UI
+
+### 🔄 IMPROVEMENTS
+- **ESP Toggle Enhanced** - F1 ahora apaga TODOS los ESP features visualmente también
+  - Cuando presionas F1 para desactivar, todos los sub-toggles también se apagan en el menú
+  - Comportamiento consistente: ON = todo activado, OFF = todo desactivado
+  
+- **Complete Toggle Behavior** - Todos los keybinds vuelven a ser toggles ON/OFF completos
+  - F1 (ESP): Toggle ON/OFF completo con sincronización visual
+  - F2 (NoClip): Toggle ON/OFF completo con sincronización visual
+  - LeftControl (Speed): Toggle ON/OFF completo con sincronización visual
+  - E (Fly): Toggle ON/OFF completo con sincronización visual
+
+### 🧹 EXIT CHEAT IMPROVEMENTS
+- **Enhanced Cleanup** - Exit Cheat ahora elimina absolutamente TODO sin dejar rastro
+  - ✅ Limpia Health Bars (BillboardGui)
+  - ✅ Limpia Head Dots (BillboardGui)
+  - ✅ Limpia Name Tags (BillboardGui)
+  - ✅ Limpia FOV Circle completamente
+  - ✅ Limpia Watermark
+  - ✅ Limpia ESP Objects
+  - ✅ Limpia Tracers
+  - ✅ Limpia Box ESP
+  - ✅ Limpia Skeleton ESP
+  - ✅ Limpia todas las referencias y conexiones
+  - **ZERO rastro después de Exit Cheat**
+
+### 🎯 TECHNICAL CHANGES
+- Added `ToggleIndicators` storage system for visual sync
+- Added `UI:UpdateToggle()` helper function
+- Enhanced Exit Cheat cleanup with BillboardGui detection
+- Improved keybind system with full toggle + visual feedback
+
+---
+
+## Version 3.2.2 (2026-06-21) - SECURITY EDITION
+
+### 🔒 SECURITY IMPROVEMENTS
+- **Keybind Security** - All toggle keybinds now require feature to be enabled in menu first
+  - **ESP Toggle (F1)** - Only turns OFF ESP if it's already ON in menu
+  - **NoClip Toggle (F2)** - Only turns OFF NoClip if it's already ON in menu
+  - **Speed Toggle (LeftControl)** - Only turns OFF Speed if it's already ON in menu
+  - **Fly Toggle (E)** - Only turns OFF Fly if it's already ON in menu
+  - This prevents accidental activation via keybind without enabling in UI first
+  - You must enable features in the menu, then you can toggle them OFF with keybinds
+  
+### 🎯 WHY THIS CHANGE?
+- Prevents unauthorized activation (must use menu first)
+- Better control - keybinds only work as quick disable buttons
+- More secure - no surprise activations from key presses
+- Consistent behavior across all toggle features
+
+### ⌨️ TOGGLE KEYS (Security-Enhanced)
+- **F1** - ESP Toggle OFF (only if ESP is ON in menu)
+- **F2** - NoClip Toggle OFF (only if NoClip is ON in menu)
+- **E** - Fly Toggle OFF (only if Fly is ON in menu)
+- **LeftControl** - Speed Toggle OFF (only if Speed is ON in menu)
+
+---
+
 ## Version 3.2.1 (2026-06-21) - CLEAN EDITION
 
 ### 🗑️ REMOVED (Non-functional features)

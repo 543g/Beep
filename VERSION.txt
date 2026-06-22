@@ -1,10 +1,21 @@
-Beep Framework v3.2.1
+Beep Framework v3.2.6
 Release Date: June 21, 2026
-Build: Stable - CLEAN EDITION
+Build: Stable - ESP KEYBIND REMOVED
 
-FEATURES:
-- Skeleton ESP: Muestra estructura del cuerpo con líneas (R15 + R6 support)
-- Smart ESP Toggle: F1 activa automáticamente todas las características ESP principales
+REMOVED:
+❌ ESP Toggle Key (F1) completamente eliminado
+❌ No hay keybind para ESP - solo se controla desde el menú
+❌ Configuración ESPToggleKey removida
+
+REMAINING KEYBINDS (3 total):
+✅ E - Fly Toggle (solo apaga si Fly está ON en menú)
+✅ LeftControl - Speed Toggle (solo apaga si Speed está ON en menú)
+✅ F2 - NoClip Toggle (solo apaga si NoClip está ON en menú)
+
+BEHAVIOR:
+- Todos los keybinds requieren que el módulo esté activado en el menú primero
+- Keybinds solo APAGAN features (no las activan)
+- Visual sync mantenido (toggles en menú se actualizan)
 
 Features:
 - Combat: Aim Assist, Target Selector, Hold to Aim, Auto Shoot, Triggerbot, Rapid Fire, No Recoil, No Spread, Auto Reload, Kill Aura, Team Check
@@ -12,29 +23,26 @@ Features:
 - Physics: Speed Hack, Jump Boost, Infinite Jump (NO COOLDOWN), Click Teleport, NoClip, Fly Mode
 - Misc: Watermark (Draggable), Theme Changer, Remove Fog, Anti-AFK, Fullbright, FOV Changer, Smart ESP Toggle, NoClip Toggle
 
-SMART ESP TOGGLE (F1):
-Cuando presionas F1, activa automáticamente:
-- ESP Master Toggle
-- Names ESP
-- Distance ESP
-- Skeleton ESP
-- 3D Boxes/Chams
-- Tracers
-- Health Bars
-- 2D Box ESP
+TOGGLE KEYS (Only 3 Keybinds):
+- Fly Toggle: E (solo apaga si ON en menú + actualiza toggle visual)
+- Speed Toggle: LeftControl (solo apaga si ON en menú + actualiza toggle visual)
+- NoClip Toggle: F2 (solo apaga si ON en menú + actualiza toggle visual)
+- ESP: NO KEYBIND (solo se controla desde menú)
 
-TOGGLE KEYS (Customizable):
-- ESP Toggle: F1 (default) - Activa todas las ESP features
-- NoClip Toggle: F2 (default)
-- Speed Toggle: LeftControl (already existed)
-- Fly Toggle: E (already existed)
+STARTUP:
+- Todo OFF excepto Watermark
+- Inicio completamente limpio
+
+EXIT CHEAT:
+- Limpieza completa: Health Bars, Head Dots, Name Tags, FOV, Watermark, ESP, Tracers, Boxes, Skeleton
+- ZERO rastro después de salir
 
 Performance: Ultra-optimized - Zero lag
 Compatibility: Universal (all executors & games)
 Status: ALL FEATURES 100% FUNCTIONAL
 
-CHANGES FROM v3.2.0:
-✅ Removed Silent Aim (didn't work properly)
-✅ Removed Hitbox Expander (didn't work properly)
-✅ Enhanced ESP Toggle Key to activate all main ESP features automatically
-✅ Cleaner, more functional codebase
+CHANGES FROM v3.2.5:
+✅ REMOVED: ESP Toggle Key (F1) completamente eliminado
+✅ Simplificado: Solo 3 keybinds activos ahora
+✅ ESP control: Solo desde menú, sin keybind
+✅ Maintained: All keybinds require menu activation first
