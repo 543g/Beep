@@ -1,5 +1,70 @@
 # Beep Framework - Changelog
 
+## Version 3.2.1 (2026-06-21) - CLEAN EDITION
+
+### 🗑️ REMOVED (Non-functional features)
+- **Silent Aim** - Removed (didn't work properly in most games)
+- **Hitbox Expander** - Removed (didn't work properly in most games)
+
+### ⚡ IMPROVEMENTS
+- **Smart ESP Toggle** - F1 now activates ALL main ESP features automatically
+  - Enables: ESP Master, Names, Distance, Skeleton, 3D Boxes, Tracers, Health Bars, 2D Boxes
+  - One key press for complete ESP setup
+  - Much more convenient
+
+### 🎯 CLEAN CODEBASE
+- Removed ~100 lines of non-functional code
+- Better performance
+- More reliable features
+- Focus on what actually works
+
+### 📦 UPDATED FEATURE COUNT
+**Total: 44 Features** (was 46, removed 2 non-functional)
+
+**Combat Tab (20 features):**
+✅ Aim Assist with FOV control
+✅ Target Part Selector
+✅ Hold to Aim
+✅ Sticky Target Lock
+✅ Auto Shoot
+✅ Triggerbot
+✅ Rapid Fire
+✅ No Recoil
+✅ No Spread
+✅ Auto Reload
+✅ Kill Aura + Auto Aim
+✅ Team Check
+
+**Visual Tab (10 features):**
+✅ Enable ESP
+✅ Show Names
+✅ Show Distance
+✅ Show IDs
+✅ Head Dot
+✅ Skeleton ESP (works perfectly)
+✅ 3D Boxes/Chams
+✅ Tracers
+✅ Health Bars
+✅ 2D Box ESP
+
+**Misc Tab (8 features):**
+✅ Watermark
+✅ Remove Fog
+✅ Anti-AFK
+✅ Fullbright
+✅ FOV Changer
+✅ Theme Changer
+✅ **Smart ESP Toggle Key (IMPROVED)**
+✅ NoClip Toggle Key
+
+### ⌨️ TOGGLE KEYS
+- **F1** - Smart ESP Toggle (activates all main features)
+- **F2** - NoClip Toggle
+- **E** - Fly Toggle
+- **LeftControl** - Speed Toggle
+
+---
+
 ## Version 3.2.0 (2026-06-21) - ADVANCED EDITION
 
 ### ✨ NEW FEATURES

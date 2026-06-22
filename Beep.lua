@@ -2,7 +2,7 @@
 -- Universal ESP, Aimbot & Physics Controller
 
 -- VERSION CONTROL (Update this for each new version)
-local BEEP_VERSION = "v3.2.0"
+local BEEP_VERSION = "v3.2.1"
 
 local StartTime = tick()
 if not game:IsLoaded() then
@@ -46,7 +46,6 @@ local Config = {
     },
     Combat = {
         SilentAim = false,
-        SilentAimEnabled = false,
         FOV = 150,
         Smoothness = 0.5,
         TargetPart = "Head",
@@ -67,9 +66,7 @@ local Config = {
         AutoReload = false,
         KillAura = false,
         KillAuraRange = 20,
-        KillAuraTeamCheck = true,
-        HitboxExpander = false,
-        HitboxSize = 10
+        KillAuraTeamCheck = true
     },
     Physics = {
         Speed = 1,
@@ -240,72 +237,52 @@ task.spawn(function()
     end
 end)
 
--- Close Button
-local CloseMenuBtn = UI:Create("TextButton", {
-    Size = UDim2.new(0, 30, 0, 30),
-    Position = UDim2.new(1, -40, 0, 10),
-    BackgroundColor3 = Color3.fromRGB(231, 76, 60),
-    Text = "X",
-    TextColor3 = Color3.new(1, 1, 1),
-    Font = Enum.Font.GothamBold,
-    TextSize = 14,
+-- Search Bar
+local SearchBar = UI:Create("Frame", {
+    Size = UDim2.new(0, 200, 0, 30),
+    Position = UDim2.new(1, -210, 0, 10),
+    BackgroundColor3 = Color3.fromRGB(22, 18, 32),
     ZIndex = 15,
     Parent = Main
 })
-Instance.new("UICorner", CloseMenuBtn).CornerRadius = UDim.new(0, 6)
+Instance.new("UICorner", SearchBar).CornerRadius = UDim.new(0, 6)
+UI:Create("UIStroke", {Color = Config.Visuals.Accent, Thickness = 1, Transparency = 0.5, Parent = SearchBar})
 
-CloseMenuBtn.MouseButton1Click:Connect(function()
-    -- Disable the entire framework
-    UI.Active = false
-    UI.Visible = false
+local SearchBox = UI:Create("TextBox", {
+    Size = UDim2.new(1, -10, 1, -6),
+    Position = UDim2.new(0, 5, 0, 3),
+    BackgroundTransparency = 1,
+    Text = "",
+    PlaceholderText = "Search hacks...",
+    TextColor3 = Color3.new(1, 1, 1),
+    PlaceholderColor3 = Color3.fromRGB(150, 140, 160),
+    Font = Enum.Font.Gotham,
+    TextSize = 12,
+    TextXAlignment = Enum.TextXAlignment.Left,
+    ClearTextOnFocus = false,
+    ZIndex = 16,
+    Parent = SearchBar
+})
+
+-- Search functionality
+SearchBox:GetPropertyChangedSignal("Text"):Connect(function()
+    local searchText = SearchBox.Text:lower()
     
-    -- Stop all physics modifications
-    Config.Physics.Fly = false
-    Config.Physics.NoClip = false
-    Config.Physics.SpeedEnabled = false
-    Config.Physics.JumpEnabled = false
-    
-    -- Disable fly mode
-    if FlyBodyVelocity then FlyBodyVelocity:Destroy() FlyBodyVelocity = nil end
-    if FlyBodyGyro then FlyBodyGyro:Destroy() FlyBodyGyro = nil end
-    if FlyConnection then FlyConnection:Disconnect() FlyConnection = nil end
-    
-    -- Clear locked target
-    Config.Combat.LockedTarget = nil
-    
-    -- Clean up all ESP objects
-    for _, obj in pairs(ESPObjects) do
-        if obj and obj.Parent then
-            pcall(function() obj:Destroy() end)
+    -- Search through all tabs
+    for _, tab in pairs(UI.Tabs) do
+        for _, child in pairs(tab:GetChildren()) do
+            if child:IsA("Frame") and child:FindFirstChildOfClass("TextLabel") then
+                local label = child:FindFirstChildOfClass("TextLabel")
+                local text = label.Text:lower()
+                
+                if searchText == "" or text:find(searchText) then
+                    child.Visible = true
+                else
+                    child.Visible = false
+                end
+            end
         end
     end
-    ESPObjects = {}
-    
-    -- Clean up tracers
-    for _, data in pairs(TracerConnections) do
-        if data.line then
-            pcall(function() data.line:Remove() end)
-        end
-        if data.connection then
-            pcall(function() data.connection:Disconnect() end)
-        end
-    end
-    TracerConnections = {}
-    
-    -- Clean up box ESP
-    for _, data in pairs(BoxConnections) do
-        if data.box then
-            pcall(function() data.box:Remove() end)
-        end
-        if data.connection then
-            pcall(function() data.connection:Disconnect() end)
-        end
-    end
-    BoxConnections = {}
-    
-    -- Destroy the UI
-    task.wait(0.1)
-    UI.Screen:Destroy()
 end)
 
 -- Notification System
@@ -444,7 +421,7 @@ function UI:CreateTab(name)
     TabButton.MouseButton1Click:Connect(function()
         for _, v in pairs(Container:GetChildren()) do if v:IsA("ScrollingFrame") then v.Visible = false end end
         for _, v in pairs(Sidebar:GetChildren()) do 
-            if v:IsA("TextButton") and v ~= CloseMenuBtn then v.TextColor3 = Color3.fromRGB(150, 140, 160) end 
+            if v:IsA("TextButton") then v.TextColor3 = Color3.fromRGB(150, 140, 160) end 
         end
         Page.Visible = true
         TabButton.TextColor3 = Config.Visuals.Accent
@@ -966,89 +943,26 @@ task.spawn(function()
     end
 end)
 
--- Hitbox Expander System
-RunService.Heartbeat:Connect(function()
-    if not Config.Combat.HitboxExpander or not UI.Active then return end
-    
-    for _, player in pairs(Players:GetPlayers()) do
-        if player ~= LocalPlayer and player.Character then
-            -- Check if it's an enemy
-            if IsEnemy(player, Config.Combat.TeamCheck) then
-                local hum = player.Character:FindFirstChildOfClass("Humanoid")
-                if hum and hum.Health > 0 then
-                    -- Expand head hitbox
-                    local head = player.Character:FindFirstChild("Head")
-                    if head and head:IsA("BasePart") then
-                        head.Size = Vector3.new(Config.Combat.HitboxSize, Config.Combat.HitboxSize, Config.Combat.HitboxSize)
-                        head.Transparency = 1 -- Make invisible
-                        head.CanCollide = false
-                    end
-                    
-                    -- Expand torso hitbox
-                    local torso = player.Character:FindFirstChild("UpperTorso") or player.Character:FindFirstChild("Torso")
-                    if torso and torso:IsA("BasePart") then
-                        torso.Size = Vector3.new(Config.Combat.HitboxSize, Config.Combat.HitboxSize, Config.Combat.HitboxSize)
-                        torso.Transparency = 1
-                        torso.CanCollide = false
-                    end
-                    
-                    -- Expand HumanoidRootPart
-                    local hrp = player.Character:FindFirstChild("HumanoidRootPart")
-                    if hrp and hrp:IsA("BasePart") then
-                        hrp.Size = Vector3.new(Config.Combat.HitboxSize, Config.Combat.HitboxSize, Config.Combat.HitboxSize)
-                        hrp.Transparency = 1
-                        hrp.CanCollide = false
-                    end
-                end
-            end
-        end
-    end
-end)
-
--- Silent Aim System (True Silent - No Camera Movement)
-pcall(function()
-    local oldNamecall
-    oldNamecall = hookmetamethod(game, "__namecall", function(self, ...)
-        local args = {...}
-        local method = getnamecallmethod()
-        
-        if Config.Combat.SilentAimEnabled and UI.Active then
-            -- Hook mouse/camera functions for silent aim
-            if method == "FireServer" or method == "InvokeServer" then
-                if tostring(self):find("Remote") then
-                    -- Find closest enemy
-                    local target = Combat:GetClosestPlayer()
-                    if target and target.Character and IsEnemy(target, Config.Combat.TeamCheck) then
-                        local targetPart = target.Character:FindFirstChild(Config.Combat.TargetPart)
-                            or target.Character:FindFirstChild("Head")
-                            or target.Character:FindFirstChild("HumanoidRootPart")
-                        
-                        if targetPart then
-                            -- Replace mouse hit position with target position
-                            for i, arg in pairs(args) do
-                                if typeof(arg) == "Vector3" then
-                                    args[i] = targetPart.Position
-                                elseif typeof(arg) == "CFrame" then
-                                    args[i] = CFrame.new(targetPart.Position)
-                                end
-                            end
-                        end
-                    end
-                end
-            end
-        end
-        
-        return oldNamecall(self, unpack(args))
-    end)
-end)
-
--- ESP Toggle Key
+-- ESP Toggle Key (Activates main ESP features)
 UserInputService.InputBegan:Connect(function(input, gameProcessed)
     if not UI.Active or gameProcessed then return end
     
     if input.KeyCode.Name == Config.Misc.ESPToggleKey then
-        Config.Visuals.Enabled = not Config.Visuals.Enabled
-        UI:Notify(Config.Visuals.Enabled and "ESP: ON" or "ESP: OFF")
+        local newState = not Config.Visuals.Enabled
+        Config.Visuals.Enabled = newState
+        
+        -- Also toggle most ESP features
+        if newState then
+            Config.Visuals.Names = true
+            Config.Visuals.Distance = true
+            Config.Visuals.SkeletonESP = true
+            Config.Visuals.Skeletons = true  -- 3D Boxes
+            Config.Visuals.Tracers = true
+            Config.Visuals.HealthBars = true
+            Config.Visuals.BoxESP = true  -- 2D Boxes
+        end
+        
+        UI:Notify(newState and "ESP: ON (All features enabled)" or "ESP: OFF")
     end
 end)
 
@@ -1764,9 +1678,6 @@ UI:CreateSlider(CombatPage, "Rapid Fire Delay (s)", 0.01, 1, "Combat", "RapidFir
 UI:CreateToggle(CombatPage, "No Recoil", "Combat", "NoRecoil")
 UI:CreateToggle(CombatPage, "No Spread", "Combat", "NoSpread")
 UI:CreateToggle(CombatPage, "Auto Reload", "Combat", "AutoReload")
-UI:CreateToggle(CombatPage, "Silent Aim (No Camera)", "Combat", "SilentAimEnabled")
-UI:CreateToggle(CombatPage, "Hitbox Expander", "Combat", "HitboxExpander")
-UI:CreateSlider(CombatPage, "Hitbox Size", 1, 20, "Combat", "HitboxSize")
 UI:CreateToggle(CombatPage, "Kill Aura + Auto Aim", "Combat", "KillAura")
 UI:CreateToggle(CombatPage, "Kill Aura Team Check", "Combat", "KillAuraTeamCheck")
 UI:CreateSlider(CombatPage, "Kill Aura Range", 5, 50, "Combat", "KillAuraRange")
@@ -1942,6 +1853,101 @@ TeleportBtn.MouseButton1Click:Connect(function()
     else
         UI:Notify("No player selected")
     end
+end)
+
+-- Exit Cheat Button
+local ExitFrame = UI:Create("Frame", {Size = UDim2.new(1, -10, 0, 60), BackgroundColor3 = Color3.fromRGB(22, 18, 32), ZIndex = 4, Parent = MiscPage})
+Instance.new("UICorner", ExitFrame).CornerRadius = UDim.new(0, 6)
+UI:Create("UIStroke", {Color = Color3.fromRGB(231, 76, 60), Thickness = 2, Parent = ExitFrame})
+
+local ExitCheatBtn = UI:Create("TextButton", {
+    Size = UDim2.new(1, -20, 1, -20),
+    Position = UDim2.new(0, 10, 0, 10),
+    BackgroundColor3 = Color3.fromRGB(231, 76, 60),
+    Text = "EXIT CHEAT (No Trace)",
+    TextColor3 = Color3.new(1, 1, 1),
+    Font = Enum.Font.GothamBold,
+    TextSize = 14,
+    ZIndex = 5,
+    Parent = ExitFrame
+})
+Instance.new("UICorner", ExitCheatBtn).CornerRadius = UDim.new(0, 6)
+
+ExitCheatBtn.MouseButton1Click:Connect(function()
+    UI:Notify("Exiting cheat... Cleaning up...")
+    task.wait(0.5)
+    
+    -- Disable the entire framework
+    UI.Active = false
+    UI.Visible = false
+    
+    -- Stop all physics modifications
+    Config.Physics.Fly = false
+    Config.Physics.NoClip = false
+    Config.Physics.SpeedEnabled = false
+    Config.Physics.JumpEnabled = false
+    Config.Combat.SilentAim = false
+    Config.Combat.LockedTarget = nil
+    Config.Visuals.Enabled = false
+    
+    -- Disable fly mode
+    if FlyBodyVelocity then FlyBodyVelocity:Destroy() FlyBodyVelocity = nil end
+    if FlyBodyGyro then FlyBodyGyro:Destroy() FlyBodyGyro = nil end
+    if FlyConnection then FlyConnection:Disconnect() FlyConnection = nil end
+    
+    -- Clean up all ESP objects
+    for _, obj in pairs(ESPObjects) do
+        if obj and obj.Parent then
+            pcall(function() obj:Destroy() end)
+        end
+    end
+    ESPObjects = {}
+    
+    -- Clean up tracers
+    for _, data in pairs(TracerConnections) do
+        if data.line then
+            pcall(function() data.line:Remove() end)
+        end
+        if data.connection then
+            pcall(function() data.connection:Disconnect() end)
+        end
+    end
+    TracerConnections = {}
+    
+    -- Clean up box ESP
+    for _, data in pairs(BoxConnections) do
+        if data.box then
+            pcall(function() data.box:Remove() end)
+        end
+        if data.connection then
+            pcall(function() data.connection:Disconnect() end)
+        end
+    end
+    BoxConnections = {}
+    
+    -- Clean up skeleton ESP
+    for _, data in pairs(SkeletonConnections) do
+        if data.lines then
+            for _, lineData in pairs(data.lines) do
+                pcall(function() lineData.line:Remove() end)
+            end
+        end
+        if data.connection then
+            pcall(function() data.connection:Disconnect() end)
+        end
+    end
+    SkeletonConnections = {}
+    
+    -- Destroy the UI completely
+    UI.Screen:Destroy()
+    
+    -- Clear global variables
+    UI = nil
+    Config = nil
+    Combat = nil
+    Visuals = nil
+    
+    print("[Beep] Cheat exited successfully. No trace left.")
 end)
 
 UI:Notify("Beep loaded. Press 'Insert' to toggle menu.")

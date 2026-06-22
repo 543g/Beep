@@ -1,21 +1,30 @@
-Beep Framework v3.2.0
+Beep Framework v3.2.1
 Release Date: June 21, 2026
-Build: Stable - ADVANCED EDITION
+Build: Stable - CLEAN EDITION
 
-NEW FEATURES:
-- Silent Aim: Apunta sin mover cámara (invisible, usa metamethod hooking)
-- Hitbox Expander: Hace hitboxes enemigos más grandes (1-20 studs ajustable)
+FEATURES:
 - Skeleton ESP: Muestra estructura del cuerpo con líneas (R15 + R6 support)
-- Toggle Keys: ESP (F1) y NoClip (F2) customizables como Fly/Speed
+- Smart ESP Toggle: F1 activa automáticamente todas las características ESP principales
 
 Features:
-- Combat: Aim Assist, Silent Aim (NEW), Target Selector, Hold to Aim, Auto Shoot, Triggerbot, Rapid Fire, No Recoil, No Spread, Auto Reload, Hitbox Expander (NEW), Kill Aura, Team Check
-- Visuals: ESP with TEAM COLORS (Red=Enemy, Green=Teammate), Names, Distance, Head Dot (ALL PLAYERS), Skeleton ESP (NEW), IDs, 3D Chams, Tracers, Health Bars, 2D Boxes
-- Physics: Speed Hack, Jump Boost, Infinite Jump (IMPROVED - NO COOLDOWN), Click Teleport, NoClip, Fly Mode
-- Misc: Watermark (Draggable), Theme Changer, Remove Fog, Anti-AFK, Fullbright, FOV Changer, ESP Toggle Key, NoClip Toggle Key
+- Combat: Aim Assist, Target Selector, Hold to Aim, Auto Shoot, Triggerbot, Rapid Fire, No Recoil, No Spread, Auto Reload, Kill Aura, Team Check
+- Visuals: ESP with TEAM COLORS (Red=Enemy, Green=Teammate), Names, Distance, Head Dot (ALL PLAYERS), Skeleton ESP, IDs, 3D Chams, Tracers, Health Bars, 2D Boxes
+- Physics: Speed Hack, Jump Boost, Infinite Jump (NO COOLDOWN), Click Teleport, NoClip, Fly Mode
+- Misc: Watermark (Draggable), Theme Changer, Remove Fog, Anti-AFK, Fullbright, FOV Changer, Smart ESP Toggle, NoClip Toggle
+
+SMART ESP TOGGLE (F1):
+Cuando presionas F1, activa automáticamente:
+- ESP Master Toggle
+- Names ESP
+- Distance ESP
+- Skeleton ESP
+- 3D Boxes/Chams
+- Tracers
+- Health Bars
+- 2D Box ESP
 
 TOGGLE KEYS (Customizable):
-- ESP Toggle: F1 (default)
+- ESP Toggle: F1 (default) - Activa todas las ESP features
 - NoClip Toggle: F2 (default)
 - Speed Toggle: LeftControl (already existed)
 - Fly Toggle: E (already existed)
@@ -24,9 +33,8 @@ Performance: Ultra-optimized - Zero lag
 Compatibility: Universal (all executors & games)
 Status: ALL FEATURES 100% FUNCTIONAL
 
-CHANGES FROM v3.1.1:
-✅ Added Silent Aim (true silent - no camera movement)
-✅ Added Hitbox Expander (adjustable size 1-20 studs)
-✅ Added Skeleton ESP (R15 + R6 support, team colors)
-✅ Added ESP and NoClip toggle keys (customizable like Fly/Speed)
-✅ All new features fully functional and optimized
+CHANGES FROM v3.2.0:
+✅ Removed Silent Aim (didn't work properly)
+✅ Removed Hitbox Expander (didn't work properly)
+✅ Enhanced ESP Toggle Key to activate all main ESP features automatically
+✅ Cleaner, more functional codebase
