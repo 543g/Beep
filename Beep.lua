@@ -2,7 +2,7 @@
 -- Universal ESP, Aimbot & Physics Controller
 
 -- VERSION CONTROL (Update this for each new version)
-local BEEP_VERSION = "v3.5.4"
+local BEEP_VERSION = "v3.5.5"
 
 local StartTime = tick()
 if not game:IsLoaded() then
