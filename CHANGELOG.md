@@ -1,5 +1,25 @@
 # Beep Framework - Changelog
 
+## Version 3.5.2 (2026-06-22) - RAGEBOT FACE TARGET (arregla tiros en Rivals)
+
+### 🎯 ARREGLADO: en Rivals solo daba a quien estaba al frente
+**Causa:** en Rivals (y juegos similares) las balas salen del **cuerpo/cañón del personaje**, no de la cámara. El ragebot snap-eaba la cámara pero el cuerpo seguía mirando al frente, así que los tiros se iban a otro lado y solo pegaban si el enemigo estaba enfrente.
+
+**Solución:** nuevo **"Ragebot Face Target (body aim)"** — rota tu cuerpo (HumanoidRootPart) para **encarar al enemigo**, así el arma apunta directo a él.
+- Activado por defecto en perfiles Rivals, Universal y Jailbreak
+- Apagado en Arsenal (ahí dispara desde la cámara, no hace falta)
+- El TP/Fly ahora también mantiene el cuerpo derecho y encarando al enemigo (sin inclinarse)
+
+### 🔧 Otros ajustes
+- Perfil Rivals: visible check OFF para fijar objetivos más rápido
+- Combinado con el hold-fire de v3.5.1, debería pegar mucho mejor en Rivals
+
+### 💡 SI AÚN FALLA
+- Verifica que **Face Target** esté ON
+- Prueba con **Auto TP/Fly** (Move Mode Fly) para quedar justo frente al enemigo
+
+---
+
 ## Version 3.5.1 (2026-06-22) - RAGEBOT HOLD-FIRE (más rápido en Rivals)
 
 ### ⚡ Disparo continuo (mucho más rápido)
