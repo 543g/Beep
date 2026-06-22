@@ -1,6 +1,60 @@
-Beep Framework v3.6.5
+Beep Framework v3.6.6
 Release Date: June 22, 2026
-Build: Stable - TARGET QUEUE ADDED
+Build: Stable - CLEANUP RELEASE
+
+==============================================
+v3.6.6 - CODE CLEANUP (Fire Rate & Target Queue Removed)
+==============================================
+🧹 LIMPIEZA: Removidas features no utilizadas para simplificar el código
+
+**Qué se removió:**
+1. ❌ **Ragebot Fire Rate** (slider y config)
+   - Ya no se usa desde v3.6.3 (Triggerbot maneja el disparo)
+   - fireRate removido de GameProfiles
+   - fireRate removido de ragebotSettings()
+   - Código más limpio
+
+2. ❌ **Target Queue** (toggle y delay)
+   - RagebotTargetQueue config variable removida
+   - RagebotQueueDelay config variable removida
+   - Sistema completo eliminado
+   - Ragebot usa modo normal (Closest/Lowest HP/Crosshair)
+
+---
+
+### ✅ QUÉ SE MANTIENE:
+
+**Todas las features funcionales:**
+- ✅ Ragebot (Closest/Lowest HP/Crosshair modes)
+- ✅ Triggerbot (maneja TODO el auto-shoot)
+- ✅ Target Switcher (Aim Assist only)
+- ✅ Void Filter (ignora Y < -40)
+- ✅ All other features intactos
+
+---
+
+### 💡 USO RECOMENDADO (sin cambios):
+
+**Ragebot + Auto-Shoot:**
+```
+✅ Ragebot (Enable)
+✅ Triggerbot (para auto-shoot)
+✅ Ragebot Full Map (opcional)
+✅ Ragebot Face Target (para RIVALS)
+Target Mode: Closest
+Body Part: Head
+```
+
+---
+
+### 🎯 POR QUÉ ESTA LIMPIEZA:
+
+1. **Fire Rate** → No se usa desde que Triggerbot maneja el disparo
+2. **Target Queue** → Feature experimental que no es necesaria
+3. **Resultado** → Código más simple y mantenible
+4. **Funcionalidad** → Sin pérdida de features útiles
+
+---
 
 ==============================================
 v3.6.5 - RAGEBOT TARGET QUEUE (KILL ALL)

@@ -2,7 +2,7 @@
 -- Universal ESP, Aimbot & Physics Controller
 
 -- VERSION CONTROL (Update this for each new version)
-local BEEP_VERSION = "v3.6.5"
+local BEEP_VERSION = "v3.6.6"
 
 local StartTime = tick()
 if not game:IsLoaded() then
@@ -75,7 +75,6 @@ local Config = {
         RagebotTargetPart = "Head",
         RagebotMode = "Closest",
         RagebotFullMap = false,
-        RagebotFireRate = 0.05,
         RagebotTeamCheck = true,
         RagebotVisibleCheck = false,
         RagebotMaxDistance = 5000,
@@ -87,9 +86,7 @@ local Config = {
         RagebotNoClip = false,
         RagebotGameProfile = "Auto",
         RagebotFaceTarget = false,
-        RagebotIgnoreImmune = false,
-        RagebotTargetQueue = false,   -- Kill all enemies sequentially (one by one)
-        RagebotQueueDelay = 0.5       -- Delay before switching to next target in queue (seconds)
+        RagebotIgnoreImmune = false
     },
     Physics = {
         Speed = 1,
@@ -1223,99 +1220,14 @@ end)
 -- Works best in client-sided hit detection games (e.g. Arsenal).
 local Ragebot = {}
 
--- TARGET QUEUE SYSTEM: Kill all enemies sequentially
-local targetQueue = {}              -- List of all valid enemy targets
-local currentQueueIndex = 1         -- Current target in queue
-local lastQueueUpdate = 0           -- Last time queue was refreshed
-local queueSwitchCooldown = 0       -- Cooldown before switching to next in queue
-
--- Build/refresh target queue with all valid enemies
-local function RefreshTargetQueue()
-    targetQueue = {}
-    local myChar = LocalPlayer.Character
-    local myRoot = myChar and (myChar:FindFirstChild("HumanoidRootPart") or myChar:FindFirstChild("Head"))
-    if not myRoot then return end
-    
-    local settings = ragebotSettings()
-    
-    for _, player in ipairs(Players:GetPlayers()) do
-        if player ~= LocalPlayer and player.Character then
-            local hum = player.Character:FindFirstChildOfClass("Humanoid")
-            local part = getRagebotPart(player.Character, settings.part)
-            local immune = Config.Combat.RagebotIgnoreImmune and player.Character:FindFirstChildOfClass("ForceField") ~= nil
-            local inVoid = part and part.Position.Y < -40
-            
-            if hum and hum.Health > 0 and part and not immune and not inVoid and IsEnemy(player, Config.Combat.RagebotTeamCheck) then
-                local dist = (part.Position - myRoot.Position).Magnitude
-                if dist <= Config.Combat.RagebotMaxDistance then
-                    table.insert(targetQueue, {player = player, part = part, distance = dist})
-                end
-            end
-        end
-    end
-    
-    -- Sort by distance (closest first)
-    table.sort(targetQueue, function(a, b) return a.distance < b.distance end)
-    
-    currentQueueIndex = 1
-    lastQueueUpdate = tick()
-end
-
--- Get next target from queue
-local function GetQueueTarget()
-    -- Refresh queue every 2 seconds or if empty
-    if #targetQueue == 0 or (tick() - lastQueueUpdate) > 2 then
-        RefreshTargetQueue()
-    end
-    
-    if #targetQueue == 0 then return nil end
-    
-    -- Check if current target is still valid
-    if currentQueueIndex <= #targetQueue then
-        local entry = targetQueue[currentQueueIndex]
-        if entry and entry.player and entry.player.Character then
-            local hum = entry.player.Character:FindFirstChildOfClass("Humanoid")
-            if hum and hum.Health > 0 then
-                -- Update part position
-                entry.part = getRagebotPart(entry.player.Character, ragebotSettings().part)
-                if entry.part then
-                    return entry.part
-                end
-            end
-        end
-    end
-    
-    -- Current target dead/invalid, move to next
-    if tick() >= queueSwitchCooldown then
-        currentQueueIndex = currentQueueIndex + 1
-        queueSwitchCooldown = tick() + Config.Combat.RagebotQueueDelay
-        
-        -- Reached end of queue, refresh
-        if currentQueueIndex > #targetQueue then
-            RefreshTargetQueue()
-        end
-        
-        -- Try next target
-        if currentQueueIndex <= #targetQueue then
-            local entry = targetQueue[currentQueueIndex]
-            if entry and entry.part then
-                UI:Notify("🎯 Queue: Target " .. currentQueueIndex .. "/" .. #targetQueue)
-                return entry.part
-            end
-        end
-    end
-    
-    return nil
-end
-
 -- Per-game profiles. These tune the strategy; the universal core (camera snap)
 -- works on any game whose guns raycast from the camera.
 -- Note: For auto-shoot, enable Triggerbot (works with Ragebot)
 local GameProfiles = {
-    ["Universal"] = {part = "Head", visible = false, prediction = 0,  fireRate = 0.03, fireMethod = "auto", faceTarget = true},
-    ["Rivals"]    = {part = "Head", visible = false, prediction = 0,  fireRate = 0.0,  fireMethod = "hold", faceTarget = true},
-    ["Arsenal"]   = {part = "Head", visible = false, prediction = 0,  fireRate = 0.0,  fireMethod = "hold", faceTarget = false},
-    ["Jailbreak"] = {part = "Head", visible = true,  prediction = 2,  fireRate = 0.10, fireMethod = "tool", faceTarget = true},
+    ["Universal"] = {part = "Head", visible = false, prediction = 0,  fireMethod = "auto", faceTarget = true},
+    ["Rivals"]    = {part = "Head", visible = false, prediction = 0,  fireMethod = "hold", faceTarget = true},
+    ["Arsenal"]   = {part = "Head", visible = false, prediction = 0,  fireMethod = "hold", faceTarget = false},
+    ["Jailbreak"] = {part = "Head", visible = true,  prediction = 2,  fireMethod = "tool", faceTarget = true},
 }
 
 -- Detect the game once (by name) for the "Auto" profile
@@ -1336,7 +1248,6 @@ local function ragebotSettings()
             part = Config.Combat.RagebotTargetPart,
             visible = Config.Combat.RagebotVisibleCheck,
             prediction = Config.Combat.RagebotPrediction,
-            fireRate = Config.Combat.RagebotFireRate,
             fireMethod = "auto",
             faceTarget = Config.Combat.RagebotFaceTarget,
         }
@@ -1421,20 +1332,11 @@ end
 
 RunService.RenderStepped:Connect(function(dt)
     if not UI.Active or not Config.Combat.Ragebot then
-        targetQueue = {}
-        currentQueueIndex = 1
         return
     end
     
-    local target
-    
-    -- TARGET QUEUE MODE: Go through all enemies one by one
-    if Config.Combat.RagebotTargetQueue then
-        target = GetQueueTarget()
-    else
-        -- NORMAL MODE: Get best target based on mode (Closest/Lowest HP/Crosshair)
-        target = Ragebot:GetTarget()
-    end
+    -- Get best target based on mode (Closest/Lowest HP/Crosshair)
+    local target = Ragebot:GetTarget()
     
     if not target then
         return
@@ -2417,7 +2319,6 @@ UI:Create("TextLabel", {
     ZIndex = 5, Parent = InfoFrame
 })
 
-UI:CreateSlider(CombatPage, "Ragebot Fire Rate (s)", 0, 1, "Combat", "RagebotFireRate")
 UI:CreateToggle(CombatPage, "Ragebot Team Check", "Combat", "RagebotTeamCheck")
 UI:CreateToggle(CombatPage, "Ragebot Visible Check (no walls)", "Combat", "RagebotVisibleCheck")
 UI:CreateSlider(CombatPage, "Ragebot Max Distance", 50, 5000, "Combat", "RagebotMaxDistance")
@@ -2429,8 +2330,6 @@ UI:CreateSlider(CombatPage, "Ragebot Keep Distance", 2, 30, "Combat", "RagebotTP
 UI:CreateToggle(CombatPage, "Ragebot NoClip (pass walls)", "Combat", "RagebotNoClip")
 UI:CreateToggle(CombatPage, "Ragebot Face Target (body aim)", "Combat", "RagebotFaceTarget")
 UI:CreateToggle(CombatPage, "Ragebot Ignore Immune (ForceField)", "Combat", "RagebotIgnoreImmune")
-UI:CreateToggle(CombatPage, "Ragebot Target Queue (kill all enemies)", "Combat", "RagebotTargetQueue")
-UI:CreateSlider(CombatPage, "Ragebot Queue Delay (s)", 0, 2, "Combat", "RagebotQueueDelay")
 
 -- Visual Controls
 UI:CreateToggle(VisualsPage, "Enable ESP", "Visuals", "Enabled")
