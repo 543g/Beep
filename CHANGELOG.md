@@ -1,6 +1,41 @@
 # Beep Framework - Changelog
 
-## Version 3.2.6 (2026-06-21) - REMOVED ESP KEYBIND
+## Version 3.2.7 (2026-06-21) - FULL TOGGLE KEYBINDS
+
+### ✅ FIXED - Keybinds ahora son toggles ON/OFF completos
+- **Speed (LeftControl)** - Presiona para activar, presiona de nuevo para desactivar
+- **Fly (E)** - Presiona para activar, presiona de nuevo para desactivar
+- **NoClip (F2)** - Presiona para activar, presiona de nuevo para desactivar
+
+### 🎯 BEHAVIOR
+**Antes (v3.2.6):**
+- Keybinds solo apagaban
+- Necesitabas abrir menú para volver a activar
+- Inconveniente y lento
+
+**Ahora (v3.2.7):**
+- Keybinds funcionan como toggles completos
+- Presiona una vez = ON
+- Presiona otra vez = OFF
+- Los toggles en el menú se actualizan automáticamente
+- Mucho más conveniente y rápido
+
+### 💡 EXAMPLE
+```
+1. Presionas LeftControl → Speed se activa (toggle en menú cambia a ON)
+2. Presionas LeftControl otra vez → Speed se desactiva (toggle en menú cambia a OFF)
+3. Presionas LeftControl de nuevo → Speed se activa otra vez
+4. No necesitas abrir el menú
+```
+
+### 🔄 VISUAL SYNC MAINTAINED
+- Los toggles en el menú se actualizan cuando usas keybinds
+- Sincronización perfecta entre keybinds y UI
+- Siempre sabes el estado actual
+
+---
+
+## Version 3.2.6 (2026-06-21) - ESP KEYBIND REMOVED
 
 ### 🗑️ REMOVED
 - **ESP Toggle Key (F1)** - Completamente eliminado

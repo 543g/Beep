@@ -1,21 +1,21 @@
-Beep Framework v3.2.6
+Beep Framework v3.2.7
 Release Date: June 21, 2026
-Build: Stable - ESP KEYBIND REMOVED
+Build: Stable - FULL TOGGLE KEYBINDS
 
-REMOVED:
-❌ ESP Toggle Key (F1) completamente eliminado
-❌ No hay keybind para ESP - solo se controla desde el menú
-❌ Configuración ESPToggleKey removida
+KEYBIND BEHAVIOR (FIXED):
+✅ Todos los keybinds funcionan como toggles ON/OFF completos
+✅ Presiona una vez = ON, presiona otra vez = OFF
+✅ No necesitas abrir el menú para reactivar
+✅ Los toggles en el menú se actualizan visualmente
 
-REMAINING KEYBINDS (3 total):
-✅ E - Fly Toggle (solo apaga si Fly está ON en menú)
-✅ LeftControl - Speed Toggle (solo apaga si Speed está ON en menú)
-✅ F2 - NoClip Toggle (solo apaga si NoClip está ON en menú)
+KEYBINDS (3 total):
+✅ E - Fly Toggle (ON/OFF completo)
+✅ LeftControl - Speed Toggle (ON/OFF completo)
+✅ F2 - NoClip Toggle (ON/OFF completo)
 
-BEHAVIOR:
-- Todos los keybinds requieren que el módulo esté activado en el menú primero
-- Keybinds solo APAGAN features (no las activan)
-- Visual sync mantenido (toggles en menú se actualizan)
+STARTUP (CLEAN):
+- Todo OFF por defecto excepto Watermark
+- Inicio limpio y controlado
 
 Features:
 - Combat: Aim Assist, Target Selector, Hold to Aim, Auto Shoot, Triggerbot, Rapid Fire, No Recoil, No Spread, Auto Reload, Kill Aura, Team Check
@@ -23,11 +23,17 @@ Features:
 - Physics: Speed Hack, Jump Boost, Infinite Jump (NO COOLDOWN), Click Teleport, NoClip, Fly Mode
 - Misc: Watermark (Draggable), Theme Changer, Remove Fog, Anti-AFK, Fullbright, FOV Changer, Smart ESP Toggle, NoClip Toggle
 
-TOGGLE KEYS (Only 3 Keybinds):
-- Fly Toggle: E (solo apaga si ON en menú + actualiza toggle visual)
-- Speed Toggle: LeftControl (solo apaga si ON en menú + actualiza toggle visual)
-- NoClip Toggle: F2 (solo apaga si ON en menú + actualiza toggle visual)
+KEYBINDS (Full Toggle ON/OFF):
+- Fly Toggle: E (toggle completo + actualiza toggle en menú)
+- Speed Toggle: LeftControl (toggle completo + actualiza toggle en menú)
+- NoClip Toggle: F2 (toggle completo + actualiza toggle en menú)
 - ESP: NO KEYBIND (solo se controla desde menú)
+
+HOW THEY WORK:
+- Primera vez: Activa el módulo (ON)
+- Segunda vez: Desactiva el módulo (OFF)
+- Tercera vez: Activa otra vez (ON)
+- Y así sucesivamente... toggle infinito
 
 STARTUP:
 - Todo OFF excepto Watermark
@@ -41,8 +47,8 @@ Performance: Ultra-optimized - Zero lag
 Compatibility: Universal (all executors & games)
 Status: ALL FEATURES 100% FUNCTIONAL
 
-CHANGES FROM v3.2.5:
-✅ REMOVED: ESP Toggle Key (F1) completamente eliminado
-✅ Simplificado: Solo 3 keybinds activos ahora
-✅ ESP control: Solo desde menú, sin keybind
-✅ Maintained: All keybinds require menu activation first
+CHANGES FROM v3.2.6:
+✅ FIXED: Keybinds ahora funcionan como toggles ON/OFF completos
+✅ No necesitas abrir menú para reactivar features
+✅ Mucho más conveniente y rápido
+✅ Visual sync mantenido (toggles en menú se actualizan)

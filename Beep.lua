@@ -2,7 +2,7 @@
 -- Universal ESP, Aimbot & Physics Controller
 
 -- VERSION CONTROL (Update this for each new version)
-local BEEP_VERSION = "v3.2.6"
+local BEEP_VERSION = "v3.2.7"
 
 local StartTime = tick()
 if not game:IsLoaded() then
@@ -806,13 +806,12 @@ UserInputService.InputBegan:Connect(function(input, gameProcessed)
         end
     end
     
-    -- Speed Hack Toggle (only toggle OFF if enabled in menu first)
+    -- Speed Hack Toggle (complete toggle ON/OFF)
     if input.KeyCode.Name == Config.Physics.SpeedKey then
-        if Config.Physics.SpeedEnabled then
-            Config.Physics.SpeedEnabled = false
-            UI:UpdateToggle("Physics", "SpeedEnabled", false)
-            UI:Notify("Speed Hack: OFF")
-        end
+        local newState = not Config.Physics.SpeedEnabled
+        Config.Physics.SpeedEnabled = newState
+        UI:UpdateToggle("Physics", "SpeedEnabled", newState)
+        UI:Notify(newState and "Speed Hack: ON" or "Speed Hack: OFF")
     end
 end)
 
@@ -1015,12 +1014,11 @@ UserInputService.InputBegan:Connect(function(input, gameProcessed)
     if not UI.Active or gameProcessed then return end
     
     if input.KeyCode.Name == Config.Misc.NoClipToggleKey then
-        -- Only toggle OFF if already enabled in menu
-        if Config.Physics.NoClip then
-            Config.Physics.NoClip = false
-            UI:UpdateToggle("Physics", "NoClip", false)
-            UI:Notify("NoClip: OFF")
-        end
+        -- Complete toggle ON/OFF
+        local newState = not Config.Physics.NoClip
+        Config.Physics.NoClip = newState
+        UI:UpdateToggle("Physics", "NoClip", newState)
+        UI:Notify(newState and "NoClip: ON" or "NoClip: OFF")
     end
 end)
 
@@ -1657,13 +1655,18 @@ end
 UserInputService.InputBegan:Connect(function(input, gameProcessed)
     if not UI.Active or gameProcessed then return end
     if input.KeyCode.Name == Config.Physics.FlyKey then
-        -- Only toggle OFF if already enabled in menu
-        if Config.Physics.Fly then
-            Config.Physics.Fly = false
+        -- Complete toggle ON/OFF
+        local newState = not Config.Physics.Fly
+        Config.Physics.Fly = newState
+        
+        if newState then
+            EnableFly()
+        else
             DisableFly()
-            UI:UpdateToggle("Physics", "Fly", false)
-            UI:Notify("Fly Mode: OFF")
         end
+        
+        UI:UpdateToggle("Physics", "Fly", newState)
+        UI:Notify(newState and "Fly Mode: ON" or "Fly Mode: OFF")
     end
 end)
 
