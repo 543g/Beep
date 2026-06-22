@@ -1,39 +1,27 @@
-Beep Framework v3.5.6
+Beep Framework v3.5.7
 Release Date: June 22, 2026
-Build: Stable - INVISIBILITY FIXED
+Build: Stable - INVISIBILITY REMOVED
 
 ==============================================
-v3.5.6 - INVISIBILITY SYSTEM FIXED
+v3.5.7 - INVISIBILITY SYSTEM REMOVED
 ==============================================
-🔮 Invisibilidad ARREGLADA - Implementación completa del método position desync
-- Ya NO te quedas atrapado en el void
-- Ya NO puedes moverte libremente por el mapa
-- Basado en script funcional de Grow a Garden
-- Método: teleporta -200k studs → ajusta cámara → espera 1 frame → restaura posición
-- Otros clientes renderizan tu posición vieja = invisible para ellos
-- Funciona mejor en: Arsenal (95%), Phantom Forces (80%)
-- Parcialmente en: RIVALS (40%), Jailbreak (depende anti-cheat)
-- Toggle en Physics tab
-- Advertencia incluida: "may not work in all games"
+🗑️ Sistema de invisibilidad ELIMINADO completamente
+Razón: NO funcionaba en ningún juego de forma confiable
+- Otros jugadores seguían viendo al usuario
+- Métodos client-side no pueden crear verdadera invisibilidad
+- Requiere server-side exploit o RemoteEvent hooking
+- Mejor eliminar feature que no funciona
 
-Mecánica técnica:
-- Heartbeat loop: captura posición real
-- Teleporta HumanoidRootPart -200k studs en Y
-- Ajusta CameraOffset para que TU veas normal
-- RenderStepped:Wait() - espera 1 frame (crítico para desync)
-- Restaura posición y camera offset
-- Hace partes transparentes localmente (feedback visual)
-- Al desactivar: restaura transparencia y camera offset
+✅ Todas las demás features intactas y funcionales
+✅ Backup completo guardado en: Beep_Backups/
 
 ==============================================
-v3.5.5 - INVISIBILITY ATTEMPT #3 (FAILED)
+v3.5.6 - INVISIBILITY ATTEMPT #4 (FAILED)
 ==============================================
-❌ Intentó método de transparencia local - NO funcionó
-Problema reportado: "me siguen podiendo ver"
-Causa: método equivocado, no crea desync real
+❌ Intentó implementación completa del script de Grow a Garden
+Problema: "nada me siguen viendo"
+Conclusión: invisibilidad client-side NO es viable
 
-==============================================
-v3.5.4 - INVISIBILITY SYSTEM (BUGGY)
 ==============================================
 🔮 Nueva Feature: Invisibilidad Client-Side
 - Sistema de invisibilidad basado en position exploit

@@ -101,10 +101,7 @@ local Config = {
         ClickTP = false,
         ClickTPKey = "LeftControl",
         FlyActive = false,
-        NoClipActive = false,
-        -- Invisibility System
-        Invisibility = false,
-        InvisibilityActive = false
+        NoClipActive = false
     },
     Misc = {
         Fullbright = false,
@@ -2324,16 +2321,6 @@ end)
 UI:CreateSlider(PhysicsPage, "Fly Speed", 10, 500, "Physics", "FlySpeed")
 UI:CreateKeybind(PhysicsPage, "Fly Toggle Key", "Physics", "FlyKey")
 
--- Invisibility System
-UI:CreateToggle(PhysicsPage, "Invisibility (Position Desync)", "Physics", "Invisibility", function(state)
-    Config.Physics.InvisibilityActive = state
-    if state then
-        EnableInvisibility()
-    else
-        DisableInvisibility()
-    end
-end)
-
 -- Misc Controls
 UI:CreateToggle(MiscPage, "Watermark", "Misc", "Watermark")
 UI:CreateToggle(MiscPage, "Remove Fog", "Misc", "RemoveFog")
@@ -2605,139 +2592,3 @@ ExitCheatBtn.MouseButton1Click:Connect(function()
 end)
 
 UI:Notify("Beep loaded. Press 'Insert' to toggle menu.")
-
-
---==================================================================--
--- INVISIBILITY SYSTEM v4 (Position Desync - Full Implementation)
--- Based on working script from Grow a Garden
--- Desyncs your position from other clients using rapid teleport cycle
--- Works best in: Arsenal (95%), Phantom Forces (80%)
--- May work partially in RIVALS, Jailbreak (depends on anti-cheat)
---==================================================================--
-
-local InvisibilityConnection = nil
-local InvisibilityCharacterParts = {}
-
-local function CollectCharacterParts()
-    InvisibilityCharacterParts = {}
-    local character = LocalPlayer.Character
-    if not character then return end
-    
-    for _, v in pairs(character:GetDescendants()) do
-        if v:IsA("BasePart") then
-            table.insert(InvisibilityCharacterParts, v)
-        end
-    end
-end
-
-local function EnableInvisibility()
-    if InvisibilityConnection then return end
-    
-    local character = LocalPlayer.Character
-    if not character then 
-        UI:Notify("❌ No character found")
-        return 
-    end
-    
-    local humanoid = character:FindFirstChild("Humanoid")
-    local hrp = character:FindFirstChild("HumanoidRootPart")
-    
-    if not humanoid or not hrp then 
-        UI:Notify("❌ Character not ready")
-        return 
-    end
-    
-    -- Collect parts for transparency toggle
-    CollectCharacterParts()
-    
-    -- Main invisibility loop (position desync method)
-    InvisibilityConnection = RunService.Heartbeat:Connect(function()
-        if not Config.Physics.InvisibilityActive then 
-            if InvisibilityConnection then
-                InvisibilityConnection:Disconnect()
-                InvisibilityConnection = nil
-            end
-            -- Restore transparency when disabled
-            for _, part in pairs(InvisibilityCharacterParts) do
-                if part and part.Parent then
-                    pcall(function() part.Transparency = 0 end)
-                end
-            end
-            return 
-        end
-        
-        pcall(function()
-            local char = LocalPlayer.Character
-            if not char then return end
-            
-            local hum = char:FindFirstChild("Humanoid")
-            local root = char:FindFirstChild("HumanoidRootPart")
-            if not hum or not root then return end
-            
-            -- Save current real position and camera offset
-            local oldCFrame = root.CFrame
-            local oldCameraOffset = hum.CameraOffset
-            
-            -- Teleport FAR underground (-200k studs like original script)
-            local newCFrame = root.CFrame * CFrame.new(0, -200000, 0)
-            root.CFrame = newCFrame
-            
-            -- Adjust camera so YOU see normally (camera stays at real position)
-            hum.CameraOffset = newCFrame:ToObjectSpace(CFrame.new(root.CFrame.Position)).Position
-            
-            -- Wait one rendered frame (critical for desync)
-            RunService.RenderStepped:Wait()
-            
-            -- Restore to real position
-            if root and root.Parent and hum and hum.Parent then
-                root.CFrame = oldCFrame
-                hum.CameraOffset = oldCameraOffset
-            end
-        end)
-    end)
-    
-    -- Make character transparent locally (visual feedback)
-    for _, part in pairs(InvisibilityCharacterParts) do
-        if part and part.Parent then
-            pcall(function() part.Transparency = 1 end)
-        end
-    end
-    
-    UI:Notify("👻 Invisibility ON (position desync active)")
-    UI:Notify("⚠️ May not work in all games - best in Arsenal")
-end
-
-local function DisableInvisibility()
-    if InvisibilityConnection then
-        InvisibilityConnection:Disconnect()
-        InvisibilityConnection = nil
-    end
-    
-    -- Restore transparency
-    for _, part in pairs(InvisibilityCharacterParts) do
-        if part and part.Parent then
-            pcall(function() part.Transparency = 0 end)
-        end
-    end
-    
-    -- Restore camera offset
-    local character = LocalPlayer.Character
-    if character then
-        local humanoid = character:FindFirstChild("Humanoid")
-        if humanoid then
-            humanoid.CameraOffset = Vector3.new(0, 0, 0)
-        end
-    end
-    
-    UI:Notify("Invisibility OFF")
-end
-
--- Character respawn handler
-LocalPlayer.CharacterAdded:Connect(function()
-    task.wait(1)
-    if Config.Physics.InvisibilityActive then
-        EnableInvisibility()
-    end
-end)
-
-print("[Beep] Invisibility system v4 loaded (position desync method - full implementation)")
