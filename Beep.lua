@@ -2,7 +2,7 @@
 -- Universal ESP, Aimbot & Physics Controller
 
 -- VERSION CONTROL (Update this for each new version)
-local BEEP_VERSION = "v3.6.0"
+local BEEP_VERSION = "v3.6.1"
 
 local StartTime = tick()
 if not game:IsLoaded() then
@@ -67,6 +67,9 @@ local Config = {
         KillAura = false,
         KillAuraRange = 20,
         KillAuraTeamCheck = true,
+        -- Target Switcher (for Aim Assist)
+        TargetSwitcher = false,       -- Auto-switch to next target when current dies
+        TargetSwitcherDelay = 0.1,    -- Delay before switching (seconds)
         -- Ragebot
         Ragebot = false,
         RagebotTargetPart = "Head",
@@ -1091,6 +1094,9 @@ end)
 
 local lastAimShootTime = 0
 local aimHoldActive = false
+local currentAimTarget = nil        -- Track current aim target for switcher
+local lastAimTargetHealth = nil     -- Track health to detect kills
+local targetSwitchCooldown = 0      -- Cooldown to prevent spam switching
 
 -- Hold to Aim Input Handler
 UserInputService.InputBegan:Connect(function(input, gameProcessed)
@@ -1116,6 +1122,34 @@ end)
 RunService.RenderStepped:Connect(function()
     if not UI.Active then return end
     
+    -- TARGET SWITCHER: Check if current aim target died
+    if Config.Combat.TargetSwitcher and currentAimTarget and tick() >= targetSwitchCooldown then
+        pcall(function()
+            if currentAimTarget.Character then
+                local hum = currentAimTarget.Character:FindFirstChildOfClass("Humanoid")
+                if hum then
+                    -- Target died or very low HP → force switch
+                    if hum.Health <= 0 or (lastAimTargetHealth and hum.Health < lastAimTargetHealth and hum.Health <= 10) then
+                        -- Clear locked target to force new search
+                        if Config.Combat.LockedTarget == currentAimTarget then
+                            Config.Combat.LockedTarget = nil
+                        end
+                        currentAimTarget = nil
+                        lastAimTargetHealth = nil
+                        targetSwitchCooldown = tick() + Config.Combat.TargetSwitcherDelay
+                        UI:Notify("🎯 Target eliminated → switching...")
+                    else
+                        lastAimTargetHealth = hum.Health
+                    end
+                end
+            else
+                -- Character disappeared
+                currentAimTarget = nil
+                lastAimTargetHealth = nil
+            end
+        end)
+    end
+    
     -- Only aim if: SilentAim is ON AND (HoldToAim is OFF OR hold key is pressed)
     local shouldAim = Config.Combat.SilentAim and (not Config.Combat.HoldToAim or aimHoldActive)
     
@@ -1128,11 +1162,23 @@ RunService.RenderStepped:Connect(function()
                 target = Config.Combat.LockedTarget
             else
                 Config.Combat.LockedTarget = nil
+                currentAimTarget = nil
+                lastAimTargetHealth = nil
                 UI:Notify("Target Lost")
             end
         else
             -- No locked target, get closest player
             target = Combat:GetClosestPlayer()
+        end
+        
+        -- Update current target for switcher
+        if target ~= currentAimTarget then
+            currentAimTarget = target
+            lastAimTargetHealth = nil
+            if target and target.Character then
+                local hum = target.Character:FindFirstChildOfClass("Humanoid")
+                if hum then lastAimTargetHealth = hum.Health end
+            end
         end
         
         if target and target.Character then
@@ -2277,6 +2323,8 @@ UI:CreateToggle(CombatPage, "Auto Reload", "Combat", "AutoReload")
 UI:CreateToggle(CombatPage, "Kill Aura + Auto Aim", "Combat", "KillAura")
 UI:CreateToggle(CombatPage, "Kill Aura Team Check", "Combat", "KillAuraTeamCheck")
 UI:CreateSlider(CombatPage, "Kill Aura Range", 5, 50, "Combat", "KillAuraRange")
+UI:CreateToggle(CombatPage, "Target Switcher (auto-switch on kill)", "Combat", "TargetSwitcher")
+UI:CreateSlider(CombatPage, "Target Switcher Delay (s)", 0, 1, "Combat", "TargetSwitcherDelay")
 
 -- Ragebot Controls
 UI:CreateToggle(CombatPage, "Ragebot (Enable)", "Combat", "Ragebot")

@@ -1,6 +1,51 @@
-Beep Framework v3.6.0
+Beep Framework v3.6.1
 Release Date: June 22, 2026
-Build: Stable - RAGEBOT AUTO SHOOT FIXED
+Build: Stable - TARGET SWITCHER ADDED
+
+==============================================
+v3.6.1 - TARGET SWITCHER (AIM ASSIST)
+==============================================
+🎯 NUEVA FEATURE: Target Switcher para Aim Assist
+
+**Qué hace:**
+- Detecta cuando matas al target actual
+- Automáticamente cambia al siguiente enemigo
+- Funciona con Aim Assist / Silent Aim (NO con Ragebot)
+
+**Cómo funciona:**
+1. Trackea HP del target actual cada frame
+2. Cuando HP <= 0 o HP cae drásticamente (< 10 HP)
+3. Limpia el target actual y forzaCheat nuevo search
+4. Notificación: "🎯 Target eliminated → switching..."
+5. Respeta el delay configurable (0-1s)
+
+**Uso:**
+```
+✅ Silent Aim (Aim Assist)
+✅ Target Switcher (auto-switch on kill)
+Delay: 0.1s (default) o ajusta con slider
+```
+
+**Toggles:**
+- "Target Switcher (auto-switch on kill)" - ON/OFF
+- "Target Switcher Delay (s)" - Slider 0-1s (default: 0.1s)
+
+**Diferencia vs Ragebot:**
+- Ragebot: busca nuevo target cada frame (siempre)
+- Aim Assist + Target Switcher: solo cambia cuando matas
+
+**Ventajas:**
+- Multi-kills más rápidos con Aim Assist
+- No pierdes tiempo buscando manualmente
+- Más "legit" que Ragebot (solo cambia al matar)
+- Funciona con Hold to Aim + Target Lock
+
+**Casos de uso:**
+1. **Aim Assist + Target Switcher**: Multi-kills semi-legit
+2. **Hold to Aim + Target Switcher**: Aim cuando holdeas, auto-switch al matar
+3. **Target Lock (Q) + Target Switcher**: Lock manual, auto-switch al matar
+
+---
 
 ==============================================
 v3.6.0 - RAGEBOT AUTO SHOOT ARREGLADO ✅
