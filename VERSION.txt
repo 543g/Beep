@@ -1,6 +1,80 @@
-Beep Framework v3.6.3
+Beep Framework v3.6.4
 Release Date: June 22, 2026
-Build: Stable - RAGEBOT AUTO SHOOT REMOVED
+Build: Stable - VOID FILTER ADDED
+
+==============================================
+v3.6.4 - IGNORE PLAYERS IN VOID
+==============================================
+🔧 ARREGLADO: Ragebot y Aim Assist ya NO apuntan a jugadores en el void
+
+**Problema (v3.6.3 y anteriores):**
+- ❌ Ragebot apuntaba a jugadores cayendo en el void
+- ❌ Perdías tiempo en targets inútiles
+- ❌ Jugadores muertos/cayendo eran targetados
+
+**Solución (v3.6.4):**
+- ✅ Filtro de void agregado: `Y < -40`
+- ✅ Ignora jugadores cayendo
+- ✅ Ignora jugadores muertos en el void
+- ✅ Solo apunta a jugadores VIVOS en el mapa
+
+---
+
+### 🎯 FILTRO DEL VOID:
+
+**Criterio:**
+```lua
+-- Skip players in the void (Y < -40)
+local inVoid = part.Position.Y < -40
+if not inVoid then
+    -- Target válido
+end
+```
+
+**Qué ignora:**
+- ❌ Jugadores con Y < -40 (cayendo al void)
+- ❌ Jugadores muertos en el fondo del mapa
+- ❌ Jugadores teleportándose bajo el mapa
+
+**Qué SÍ targetea:**
+- ✅ Jugadores con Y >= -40 (en el mapa)
+- ✅ Jugadores vivos y activos
+- ✅ Enemigos válidos
+
+---
+
+### 📍 DÓNDE SE APLICA:
+
+1. **Ragebot** (`Ragebot:GetTarget()`)
+   - Ignora void en búsqueda de targets
+   
+2. **Aim Assist** (`Combat:GetClosestPlayer()`)
+   - Ignora void en FOV search
+   
+3. **Target Validation** (`Combat:IsTargetValid()`)
+   - Valida que target no esté en void
+
+---
+
+### ✅ VENTAJAS:
+
+- ⚡ **Más eficiente** - No pierde tiempo en targets inútiles
+- 🎯 **Mejor targeting** - Solo enemigos válidos
+- 🛡️ **Menos obvio** - No apuntas al void (menos sospechoso)
+- 💯 **Más kills** - Te enfocas en enemigos vivos
+
+---
+
+### 🎮 JUEGOS AFECTADOS:
+
+| Juego | Mejora |
+|-------|--------|
+| **RIVALS** | ✅✅✅ Muchas caídas al void |
+| **Arsenal** | ✅✅ Algunos mapas con void |
+| **Phantom Forces** | ✅ Pocas caídas |
+| **Jailbreak** | ✅ Evita bugs de teleport |
+
+---
 
 ==============================================
 v3.6.3 - RAGEBOT AUTO SHOOT REMOVED

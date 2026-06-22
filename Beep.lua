@@ -2,7 +2,7 @@
 -- Universal ESP, Aimbot & Physics Controller
 
 -- VERSION CONTROL (Update this for each new version)
-local BEEP_VERSION = "v3.6.3"
+local BEEP_VERSION = "v3.6.4"
 
 local StartTime = tick()
 if not game:IsLoaded() then
@@ -916,7 +916,8 @@ function Combat:GetClosestPlayer()
                 or player.Character:FindFirstChild("HumanoidRootPart")
                 or player.Character:FindFirstChildOfClass("MeshPart")
             
-            if part then
+            -- Skip players in the void (Y < -40)
+            if part and part.Position.Y >= -40 then
                 local screenPos, onScreen = Camera:WorldToViewportPoint(part.Position)
                 if onScreen then
                     local mousePos = Vector2.new(Mouse.X, Mouse.Y)
@@ -947,6 +948,9 @@ function Combat:IsTargetValid(target)
         or target.Character:FindFirstChildOfClass("MeshPart")
     
     if not part then return false end
+    
+    -- Skip players in the void (Y < -40)
+    if part.Position.Y < -40 then return false end
     
     local screenPos, onScreen = Camera:WorldToViewportPoint(part.Position)
     if not onScreen then return false end
@@ -1289,7 +1293,10 @@ function Ragebot:GetTarget()
             local part = getRagebotPart(player.Character, settings.part)
             -- Skip players with spawn protection (ForceField = immune, can't be damaged)
             local immune = Config.Combat.RagebotIgnoreImmune and player.Character:FindFirstChildOfClass("ForceField") ~= nil
-            if hum and hum.Health > 0 and part and not immune and IsEnemy(player, Config.Combat.RagebotTeamCheck) then
+            -- Skip players in the void (falling/dead) - Y position < -40
+            local inVoid = part and part.Position.Y < -40
+            
+            if hum and hum.Health > 0 and part and not immune and not inVoid and IsEnemy(player, Config.Combat.RagebotTeamCheck) then
                 local dist = (part.Position - myRoot.Position).Magnitude
                 if dist <= Config.Combat.RagebotMaxDistance then
                     -- On-screen filter (only if Full Map is off)
