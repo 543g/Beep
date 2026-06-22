@@ -2,7 +2,7 @@
 -- Universal ESP, Aimbot & Physics Controller
 
 -- VERSION CONTROL (Update this for each new version)
-local BEEP_VERSION = "v3.5.8"
+local BEEP_VERSION = "v3.6.0"
 
 local StartTime = tick()
 if not game:IsLoaded() then
@@ -85,10 +85,7 @@ local Config = {
         RagebotNoClip = true,
         RagebotGameProfile = "Auto",
         RagebotFaceTarget = true,
-        RagebotIgnoreImmune = true,
-        -- RIVALS Specific Features
-        RagebotWallbang = false,      -- Shoot +5 studs above target to pass walls
-        RagebotWallbangOffset = 5     -- Height offset for wallbang (studs)
+        RagebotIgnoreImmune = true
     },
     Physics = {
         Speed = 1,
@@ -1173,6 +1170,38 @@ end)
 -- ===== RAGEBOT SYSTEM =====
 -- Aggressive aimbot: targets any player on the whole map, snaps to target, auto-fires.
 -- Works best in client-sided hit detection games (e.g. Arsenal).
+local lastRageShot = 0
+
+local function RagebotShoot()
+    local currentTime = tick()
+    local settings = ragebotSettings()
+    
+    -- Check fire rate
+    if currentTime - lastRageShot < settings.fireRate then
+        return -- Too soon
+    end
+    lastRageShot = currentTime
+    
+    task.spawn(function()
+        local char = LocalPlayer.Character
+        if not char then return end
+        
+        -- Method 1: Tool Activation (most reliable for Roblox games)
+        local tool = char:FindFirstChildOfClass("Tool")
+        if tool then
+            pcall(function() tool:Activate() end)
+            task.wait(0.05)
+            pcall(function() tool:Deactivate() end)
+            return
+        end
+        
+        -- Method 2: Mouse click simulation
+        pcall(function()
+            mouse1click()
+        end)
+    end)
+end
+
 local Ragebot = {}
 local lastRageShot = 0
 
@@ -1285,34 +1314,18 @@ function Ragebot:GetTarget()
     return best
 end
 
-
-local rageFiring = false
-local function rageSetFire(active)
-    if active == rageFiring then return end
-    rageFiring = active
-    pcall(function()
-        VirtualInputManager:SendMouseButtonEvent(Mouse.X, Mouse.Y, 0, active, game, 0)
-    end)
-end
-
 RunService.RenderStepped:Connect(function(dt)
     if not UI.Active or not Config.Combat.Ragebot then
-        rageSetFire(false)
         return
     end
+    
     local target = Ragebot:GetTarget()
     if not target then
-        rageSetFire(false)
         return
     end
 
     local settings = ragebotSettings()
     local aimPos = target.Position
-    
-    -- RIVALS WALLBANG: Add vertical offset to shoot over walls
-    if Config.Combat.RagebotWallbang then
-        aimPos = aimPos + Vector3.new(0, Config.Combat.RagebotWallbangOffset, 0)
-    end
     
     -- Prediction for projectile weapons (from active profile)
     if settings.prediction > 0 then
@@ -1365,20 +1378,9 @@ RunService.RenderStepped:Connect(function(dt)
     -- Snap camera to target (this is what registers hits in client-sided games)
     Camera.CFrame = CFrame.new(Camera.CFrame.Position, aimPos)
 
-    -- Auto fire
+    -- Auto fire (using same method as Triggerbot - WORKS!)
     if Config.Combat.RagebotAutoShoot then
-        -- Hold mouse down for automatic weapons (fast continuous fire, like Arsenal)
-        rageSetFire(true)
-        -- Also tap the tool for semi-auto weapons, gated by the profile fire rate
-        local now = tick()
-        if now - lastRageShot >= settings.fireRate then
-            lastRageShot = now
-            local char = LocalPlayer.Character
-            local tool = char and char:FindFirstChildOfClass("Tool")
-            if tool then pcall(function() tool:Activate() end) end
-        end
-    else
-        rageSetFire(false)
+        RagebotShoot()
     end
 end)
 
@@ -2297,8 +2299,6 @@ UI:CreateSlider(CombatPage, "Ragebot Keep Distance", 2, 30, "Combat", "RagebotTP
 UI:CreateToggle(CombatPage, "Ragebot NoClip (pass walls)", "Combat", "RagebotNoClip")
 UI:CreateToggle(CombatPage, "Ragebot Face Target (body aim)", "Combat", "RagebotFaceTarget")
 UI:CreateToggle(CombatPage, "Ragebot Ignore Immune (ForceField)", "Combat", "RagebotIgnoreImmune")
-UI:CreateToggle(CombatPage, "Ragebot Wallbang (+Y offset)", "Combat", "RagebotWallbang")
-UI:CreateSlider(CombatPage, "Ragebot Wallbang Offset", 1, 20, "Combat", "RagebotWallbangOffset")
 
 -- Visual Controls
 UI:CreateToggle(VisualsPage, "Enable ESP", "Visuals", "Enabled")

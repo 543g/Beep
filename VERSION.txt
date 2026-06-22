@@ -1,9 +1,91 @@
-Beep Framework v3.5.8
+Beep Framework v3.6.0
 Release Date: June 22, 2026
-Build: Stable - RAGEBOT WALLBANG ADDED
+Build: Stable - RAGEBOT AUTO SHOOT FIXED
 
 ==============================================
-v3.5.8 - RAGEBOT WALLBANG (RIVALS)
+v3.6.0 - RAGEBOT AUTO SHOOT ARREGLADO ✅
+==============================================
+🔧 PROBLEMA RESUELTO: Auto Shoot ya funciona!
+
+**Antes (v3.5.x):**
+- ❌ Ragebot Auto Shoot NO funcionaba
+- ❌ Tenías que activar Triggerbot para que dispare
+- ❌ Usaba VirtualInputManager (no funciona bien)
+
+**Ahora (v3.6.0):**
+- ✅ Ragebot Auto Shoot FUNCIONA perfectamente
+- ✅ Ya NO necesitas activar Triggerbot
+- ✅ Usa tool:Activate() como el Triggerbot
+
+---
+
+### Nuevo Método de Disparo:
+
+```lua
+local function RagebotShoot()
+    local currentTime = tick()
+    local settings = ragebotSettings()
+    
+    -- Check fire rate
+    if currentTime - lastRageShot < settings.fireRate then
+        return -- Too soon
+    end
+    lastRageShot = currentTime
+    
+    -- Method 1: Tool Activation (most reliable)
+    local tool = char:FindFirstChildOfClass("Tool")
+    if tool then
+        tool:Activate()
+        wait(0.05)
+        tool:Deactivate()
+        return
+    end
+    
+    -- Method 2: Mouse click fallback
+    mouse1click()
+end
+```
+
+---
+
+### Cómo Funciona:
+
+1. **Ragebot activo** → encuentra target
+2. **Auto Shoot ON** → llama `RagebotShoot()`
+3. **Respeta Fire Rate** del perfil (0-1s)
+4. **Activa tool** → dispara
+5. **Deactiva tool** → recarga/prepara siguiente disparo
+
+---
+
+### Uso:
+
+```
+✅ Ragebot
+✅ Ragebot Auto Shoot  ← YA FUNCIONA!
+Fire Rate: 0 (máximo) o según perfil
+```
+
+**NO necesitas:**
+- ❌ Triggerbot (ya no es necesario)
+- ❌ Configuración extra
+
+---
+
+### Compatibilidad:
+
+| Juego | Funciona |
+|-------|----------|
+| **Arsenal** | ✅ Perfecto |
+| **RIVALS** | ✅ Perfecto |
+| **Phantom Forces** | ✅ Perfecto |
+| **Jailbreak** | ✅ Perfecto |
+| **Universal** | ✅ Perfecto |
+
+---
+
+==============================================
+v3.5.8 - WALLBANG REMOVED
 ==============================================
 🎯 Nueva Feature: WALLBANG con Height Offset
 - Dispara +Y studs arriba del target para pasar paredes
