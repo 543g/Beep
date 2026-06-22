@@ -1,5 +1,72 @@
 # Beep Framework - Changelog
 
+## Version 3.0.0 (2026-06-21) - COMPLETE EDITION
+
+### ✨ NEW FEATURES
+- **Rapid Fire** - Shoot faster with adjustable delay (0.01-1s)
+- **No Recoil** - Eliminates weapon recoil (camera stabilization)
+- **No Spread** - Removes bullet spread (resets spread values)
+- **Auto Reload** - Automatically reloads when ammo is empty
+- **Weapon ESP** - Shows equipped weapon of each player
+- **Head Dot** - Red dot on enemy heads for easier aiming
+
+### 🔧 FIXED
+- **Bunny Hop** - Now works perfectly with proper timing
+- **Watermark** - Moved to bottom left and made draggable
+- **Distance ESP** - Now displays correctly with improved formatting
+
+### 🎨 IMPROVEMENTS
+- **Watermark Draggable** - Click and drag to move anywhere
+- **Watermark Position** - Starts at bottom left (Y: 400px)
+- **ESP Enhanced** - Distance shows as [XXm] next to name
+- **Weapon Display** - Shows gun icon + weapon name
+- **Head Dot** - Circular red indicator on head
+- **All Combat Features** - Fully implemented and tested
+
+### 💻 TECHNICAL
+- Rapid Fire uses delay system to control fire rate
+- No Recoil stores camera CFrame to prevent recoil
+- No Spread resets Spread/MaxSpread values in tools
+- Auto Reload checks Ammo/Magazine values and presses R
+- Weapon ESP updates in real-time (0.1s intervals)
+- Head Dot uses BillboardGui with rounded frame
+
+### 📦 ALL FEATURES NOW FUNCTIONAL
+✅ Aim Assist with Target Selector
+✅ Hold to Aim (RMB)
+✅ Sticky Target Lock (Q)
+✅ Auto Shoot for Locked Targets
+✅ Triggerbot (auto-shoot on hover)
+✅ **Rapid Fire (NEW - WORKING)**
+✅ **No Recoil (NEW - WORKING)**
+✅ **No Spread (NEW - WORKING)**
+✅ **Auto Reload (NEW - WORKING)**
+✅ Team Detection (universal)
+✅ ESP with Names, Distance, IDs
+✅ **Weapon ESP (NEW - WORKING)**
+✅ **Head Dot (NEW - WORKING)**
+✅ 3D Chams/Boxes
+✅ Tracers
+✅ Health Bars
+✅ 2D Box ESP
+✅ Speed Hack (CFrame-based)
+✅ Jump Boost
+✅ **Bunny Hop (FIXED - WORKING)**
+✅ **Click Teleport (WORKING)**
+✅ NoClip
+✅ Fly Mode (WASD controls)
+✅ **Watermark (FIXED - Draggable)**
+✅ Theme Changer (6 colors)
+✅ Remove Fog
+✅ Anti-AFK
+✅ Fullbright
+✅ Infinite Jump
+✅ FOV Changer
+✅ Kill Aura
+✅ Teleport to Player
+
+---
+
 ## Version 2.2.0 (2026-06-21)
 
 ### ✨ New Features

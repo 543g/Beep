@@ -172,10 +172,10 @@ local ProjectLabel = UI:Create("TextLabel", {
 -- Watermark
 local Watermark = UI:Create("TextLabel", {
     Size = UDim2.new(0, 300, 0, 50),
-    Position = UDim2.new(0, 10, 0, 400),
+    Position = UDim2.new(0, 10, 0, 10),
     BackgroundColor3 = Color3.fromRGB(12, 10, 18),
     BackgroundTransparency = 0.3,
-    Text = "Beep v3.0.0 | FPS: 60 | Ping: 0ms",
+    Text = "Beep v2.2.0 | FPS: 60 | Ping: 0ms",
     TextColor3 = Color3.new(1, 1, 1),
     Font = Enum.Font.GothamBold,
     TextSize = 12,
@@ -189,36 +189,6 @@ UI:Create("UIPadding", {PaddingLeft = UDim.new(0, 10), PaddingTop = UDim.new(0, 
 Instance.new("UICorner", Watermark).CornerRadius = UDim.new(0, 8)
 UI:Create("UIStroke", {Color = Config.Visuals.Accent, Thickness = 1, Transparency = 0.5, Parent = Watermark})
 
--- Make Watermark Draggable
-local watermarkDragging = false
-local watermarkDragStart = nil
-local watermarkStartPos = nil
-
-Watermark.InputBegan:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseButton1 then
-        watermarkDragging = true
-        watermarkDragStart = input.Position
-        watermarkStartPos = Watermark.Position
-        input.Changed:Connect(function()
-            if input.UserInputState == Enum.UserInputState.End then
-                watermarkDragging = false
-            end
-        end)
-    end
-end)
-
-UserInputService.InputChanged:Connect(function(input)
-    if watermarkDragging and input.UserInputType == Enum.UserInputType.MouseMovement then
-        local delta = input.Position - watermarkDragStart
-        Watermark.Position = UDim2.new(
-            watermarkStartPos.X.Scale, 
-            watermarkStartPos.X.Offset + delta.X,
-            watermarkStartPos.Y.Scale, 
-            watermarkStartPos.Y.Offset + delta.Y
-        )
-    end
-end)
-
 -- Update Watermark
 task.spawn(function()
     while task.wait(1) do
@@ -226,7 +196,7 @@ task.spawn(function()
             local fps = math.floor(1 / RunService.RenderStepped:Wait())
             local ping = math.floor(game:GetService("Stats").Network.ServerStatsItem["Data Ping"]:GetValue())
             local time = os.date("%H:%M:%S")
-            Watermark.Text = string.format("Beep v3.0.0 | FPS: %d | Ping: %dms | %s", fps, ping, time)
+            Watermark.Text = string.format("Beep v2.2.0 | FPS: %d | Ping: %dms | %s", fps, ping, time)
             Watermark.Visible = Config.Misc.Watermark
         else
             Watermark.Visible = false
@@ -638,18 +608,8 @@ end
 -- Universal Shooting Function (Maximum Performance)
 local VirtualUser = game:GetService("VirtualUser")
 local VirtualInputManager = game:GetService("VirtualInputManager")
-local lastShootTime = 0
 
 local function Shoot()
-    -- Check Rapid Fire delay
-    local currentTime = tick()
-    if Config.Combat.RapidFire then
-        if currentTime - lastShootTime < Config.Combat.RapidFireDelay then
-            return -- Too soon, skip this shot
-        end
-    end
-    lastShootTime = currentTime
-    
     task.spawn(function()
         local char = LocalPlayer.Character
         if not char then return end
@@ -832,84 +792,6 @@ RunService.RenderStepped:Connect(function()
     end
 end)
 
--- No Recoil System
-local originalCameraCFrame = Camera.CFrame
-RunService.RenderStepped:Connect(function()
-    if Config.Combat.NoRecoil and UI.Active then
-        -- Store camera position before recoil
-        local char = LocalPlayer.Character
-        if char and char:FindFirstChildOfClass("Tool") then
-            originalCameraCFrame = Camera.CFrame
-        end
-    end
-end)
-
--- No Spread System (Client-side visual only - actual spread is server-side)
--- This prevents visual spread by stabilizing aim
-local spreadCompensation = Vector3.new(0, 0, 0)
-RunService.Heartbeat:Connect(function()
-    if Config.Combat.NoSpread and UI.Active then
-        local char = LocalPlayer.Character
-        if char then
-            local tool = char:FindFirstChildOfClass("Tool")
-            if tool then
-                -- Reset any spread-related properties if they exist
-                pcall(function()
-                    if tool:FindFirstChild("Spread") then
-                        tool.Spread.Value = 0
-                    end
-                    if tool:FindFirstChild("MaxSpread") then
-                        tool.MaxSpread.Value = 0
-                    end
-                end)
-            end
-        end
-    end
-end)
-
--- Auto Reload System
-RunService.Heartbeat:Connect(function()
-    if Config.Combat.AutoReload and UI.Active then
-        local char = LocalPlayer.Character
-        if char then
-            local tool = char:FindFirstChildOfClass("Tool")
-            if tool then
-                -- Check for common ammo/reload properties
-                pcall(function()
-                    -- Method 1: Check for Ammo value
-                    local ammo = tool:FindFirstChild("Ammo") or tool:FindFirstChild("CurrentAmmo")
-                    if ammo and ammo:IsA("IntValue") or ammo and ammo:IsA("NumberValue") then
-                        if ammo.Value <= 0 then
-                            -- Try to reload
-                            if tool:FindFirstChild("Reload") then
-                                tool.Reload:FireServer()
-                            end
-                            -- Press R key as backup
-                            pcall(function()
-                                game:GetService("VirtualInputManager"):SendKeyEvent(true, Enum.KeyCode.R, false, game)
-                                task.wait(0.05)
-                                game:GetService("VirtualInputManager"):SendKeyEvent(false, Enum.KeyCode.R, false, game)
-                            end)
-                        end
-                    end
-                    
-                    -- Method 2: Check for Magazine value
-                    local mag = tool:FindFirstChild("Magazine") or tool:FindFirstChild("Mag")
-                    if mag and (mag:IsA("IntValue") or mag:IsA("NumberValue")) then
-                        if mag.Value <= 0 then
-                            pcall(function()
-                                game:GetService("VirtualInputManager"):SendKeyEvent(true, Enum.KeyCode.R, false, game)
-                                task.wait(0.05)
-                                game:GetService("VirtualInputManager"):SendKeyEvent(false, Enum.KeyCode.R, false, game)
-                            end)
-                        end
-                    end
-                end)
-            end
-        end
-    end
-end)
-
 -- Auto Shoot for Locked Target (Separate optimized loop)
 task.spawn(function()
     while task.wait(0.05) do -- Check every 50ms (20 fps)
@@ -990,44 +872,6 @@ function Visuals:DrawESPOnCharacter(player)
         
         table.insert(ESPObjects, bGui)
         
-        -- Weapon ESP Label
-        local weaponLabel = nil
-        if Config.Visuals.WeaponESP then
-            weaponLabel = UI:Create("TextLabel", {
-                Size = UDim2.new(1, 0, 0.5, 0), 
-                Position = UDim2.new(0, 0, 1, 0),
-                BackgroundTransparency = 1, 
-                TextColor3 = Color3.fromRGB(255, 200, 80), 
-                Font = Enum.Font.GothamBold, 
-                TextSize = 10, 
-                TextStrokeTransparency = 0.5, 
-                Text = "", 
-                Parent = bGui
-            })
-        end
-        
-        -- Head Dot
-        local headDot = nil
-        if Config.Visuals.HeadDot then
-            local headPart = char:FindFirstChild("Head")
-            if headPart then
-                headDot = UI:Create("BillboardGui", {
-                    Size = UDim2.new(0, 10, 0, 10), 
-                    StudsOffset = Vector3.new(0, 0, 0), 
-                    AlwaysOnTop = true, 
-                    Parent = headPart
-                })
-                local dot = UI:Create("Frame", {
-                    Size = UDim2.new(1, 0, 1, 0), 
-                    BackgroundColor3 = Color3.fromRGB(255, 0, 0), 
-                    BorderSizePixel = 0, 
-                    Parent = headDot
-                })
-                Instance.new("UICorner", dot).CornerRadius = UDim.new(1, 0)
-                table.insert(ESPObjects, headDot)
-            end
-        end
-        
         local trackingParts = {}
         local function scanParts(rootPart)
             for _, obj in pairs(rootPart:GetChildren()) do
@@ -1045,11 +889,6 @@ function Visuals:DrawESPOnCharacter(player)
                 -- Control BillboardGui visibility
                 bGui.Enabled = visualsEnabled
                 
-                -- Update Head Dot visibility
-                if headDot then
-                    headDot.Enabled = visualsEnabled and Config.Visuals.HeadDot
-                end
-                
                 for _, box in pairs(trackingParts) do
                     if box and box.Parent then
                         box.Visible = visualsEnabled and Config.Visuals.Skeletons
@@ -1060,35 +899,10 @@ function Visuals:DrawESPOnCharacter(player)
                     local rootPart = char:FindFirstChild("HumanoidRootPart") or head
                     local distance = math.floor((rootPart.Position - Camera.CFrame.Position).Magnitude)
                     local text = player.DisplayName
-                    
-                    -- Add distance if enabled
-                    if Config.Visuals.Distance then
-                        text = text .. " [" .. distance .. "m]"
-                    end
-                    
-                    -- Add ID if enabled
-                    if Config.Visuals.IDs then 
-                        text = text .. "\n[" .. player.UserId .. "]"
-                    end
-                    
-                    -- Show weapon if enabled
-                    if Config.Visuals.WeaponESP and weaponLabel then
-                        local tool = char:FindFirstChildOfClass("Tool")
-                        if tool then
-                            weaponLabel.Text = "🔫 " .. tool.Name
-                        else
-                            weaponLabel.Text = "Unarmed"
-                        end
-                    end
-                    
-                    if Config.Visuals.Names then 
-                        label.Text = text 
-                    else 
-                        label.Text = "" 
-                    end
+                    if Config.Visuals.IDs then text = text .. " [" .. player.UserId .. "]" end
+                    if Config.Visuals.Names then label.Text = text .. "\n" .. distance .. "m" else label.Text = "" end
                 else
                     label.Text = ""
-                    if weaponLabel then weaponLabel.Text = "" end
                 end
                 task.wait(0.1)
             end
@@ -1318,7 +1132,6 @@ InfiniteJumpConnection = UserInputService.InputBegan:Connect(function(input, gam
 end)
 
 -- Bunny Hop System
-local lastBhopTime = 0
 RunService.Heartbeat:Connect(function()
     if not UI.Active or not Config.Physics.BunnyHop then return end
     local char = LocalPlayer.Character
@@ -1326,15 +1139,9 @@ RunService.Heartbeat:Connect(function()
     local hum = char:FindFirstChildOfClass("Humanoid")
     if not hum then return end
     
-    -- Check if space is held
-    if UserInputService:IsKeyDown(Enum.KeyCode.Space) then
-        local currentTime = tick()
-        -- Only jump if on ground and cooldown passed
-        if hum:GetState() == Enum.HumanoidStateType.Landed or hum:GetState() == Enum.HumanoidStateType.Running then
-            if currentTime - lastBhopTime >= 0.1 then
-                hum:ChangeState(Enum.HumanoidStateType.Jumping)
-                lastBhopTime = currentTime
-            end
+    if UserInputService:IsKeyDown(Enum.KeyCode[Config.Physics.BunnyHopKey]) or UserInputService:IsKeyDown(Enum.KeyCode.Space) then
+        if hum:GetState() ~= Enum.HumanoidStateType.Freefall and hum:GetState() ~= Enum.HumanoidStateType.Flying then
+            hum:ChangeState(Enum.HumanoidStateType.Jumping)
         end
     end
 end)
