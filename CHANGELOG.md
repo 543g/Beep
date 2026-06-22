@@ -1,5 +1,19 @@
 # Beep Framework - Changelog
 
+## Version 3.3.1 (2026-06-22) - SOBER PALETTE & MINIMIZE FIX
+
+### 🎨 NUEVA PALETA SOBRIA (menos "vibe coded")
+- Cambiado el morado/magenta vibrante por gris carbón neutro + acento azul-acero desaturado (96, 116, 158)
+- Fondos neutralizados (sin tinte morado): ventana, sidebar, top bar, componentes, notificaciones
+- Look más sobrio y profesional
+
+### 🐛 FIXES
+- **Minimizar arreglado**: ahora `ClipsDescendants` oculta TODO el contenido al minimizar (antes se veía el sidebar y la búsqueda fuera de la barra)
+- **Botón cerrar**: el icono ✕ no renderizaba (salía un cuadro □). Cambiado a una "X" que se ve en todos los executors
+- Eliminada la sombra (drop shadow) que estorbaba con el recorte
+
+---
+
 ## Version 3.3.0 (2026-06-22) - ELEGANT UI REDESIGN
 
 ### ✨ NUEVO DISEÑO VISUAL (UI COMPLETAMENTE RENOVADA)

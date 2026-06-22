@@ -1,9 +1,17 @@
-Beep Framework v3.3.0
+Beep Framework v3.3.1
 Release Date: June 22, 2026
-Build: Stable - ELEGANT UI REDESIGN
+Build: Stable - SOBER PALETTE & MINIMIZE FIX
 
 ==============================================
-NUEVO DISEÑO (v3.3.0) - UI ELEGANTE
+v3.3.1 - CAMBIOS
+==============================================
+🎨 Paleta sobria: gris carbon + acento azul-acero desaturado (no mas morado vibrante)
+🐛 Minimizar arreglado (ClipsDescendants oculta todo el contenido)
+🐛 Boton cerrar ahora es una "X" visible (antes salia un cuadro)
+🗑️ Eliminada la sombra que estorbaba
+
+==============================================
+DISEÑO ELEGANTE (v3.3.0)
 ==============================================
 ✨ Barra de titulo superior con logo, nombre y badge de version
 ✨ Botones de Minimizar (—) y Cerrar (✕) en la ventana
