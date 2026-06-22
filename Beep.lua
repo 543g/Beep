@@ -159,14 +159,28 @@ local CloseMenuBtn = UI:Create("TextButton", {
 Instance.new("UICorner", CloseMenuBtn).CornerRadius = UDim.new(0, 6)
 
 CloseMenuBtn.MouseButton1Click:Connect(function()
+    -- Disable the entire framework
     UI.Active = false
+    UI.Visible = false
+    
+    -- Stop all physics modifications
     Config.Physics.Fly = false
+    Config.Physics.NoClip = false
+    Config.Physics.SpeedEnabled = false
+    Config.Physics.JumpEnabled = false
+    
+    -- Disable fly mode
+    if FlyBodyVelocity then FlyBodyVelocity:Destroy() FlyBodyVelocity = nil end
+    if FlyBodyGyro then FlyBodyGyro:Destroy() FlyBodyGyro = nil end
+    if FlyConnection then FlyConnection:Disconnect() FlyConnection = nil end
+    
+    -- Clear locked target
     Config.Combat.LockedTarget = nil
     
     -- Clean up all ESP objects
     for _, obj in pairs(ESPObjects) do
         if obj and obj.Parent then
-            obj:Destroy()
+            pcall(function() obj:Destroy() end)
         end
     end
     ESPObjects = {}
@@ -177,7 +191,7 @@ CloseMenuBtn.MouseButton1Click:Connect(function()
             pcall(function() data.line:Remove() end)
         end
         if data.connection then
-            data.connection:Disconnect()
+            pcall(function() data.connection:Disconnect() end)
         end
     end
     TracerConnections = {}
@@ -188,11 +202,13 @@ CloseMenuBtn.MouseButton1Click:Connect(function()
             pcall(function() data.box:Remove() end)
         end
         if data.connection then
-            data.connection:Disconnect()
+            pcall(function() data.connection:Disconnect() end)
         end
     end
     BoxConnections = {}
     
+    -- Destroy the UI
+    task.wait(0.1)
     UI.Screen:Destroy()
 end)
 
@@ -443,6 +459,35 @@ function UI:CreateKeybind(parent, text, configSection, configKey)
     end)
 end
 
+function UI:CreateSelector(parent, text, configSection, configKey, options)
+    local Frame = UI:Create("Frame", {Size = UDim2.new(1, -10, 0, 40), BackgroundColor3 = Color3.fromRGB(22, 18, 32), ZIndex = 4, Parent = parent})
+    Instance.new("UICorner", Frame).CornerRadius = UDim.new(0, 6)
+    
+    UI:Create("TextLabel", {Size = UDim2.new(0.5, 0, 1, 0), Position = UDim2.new(0, 10, 0, 0), BackgroundTransparency = 1, Text = text, TextColor3 = Color3.new(1,1,1), Font = Enum.Font.Gotham, TextSize = 13, TextXAlignment = Enum.TextXAlignment.Left, ZIndex = 5, Parent = Frame})
+    
+    local SelectorButton = UI:Create("TextButton", {
+        Size = UDim2.new(0, 120, 0, 24), Position = UDim2.new(1, -130, 0.5, -12),
+        BackgroundColor3 = Config.Visuals.Accent,
+        Text = "< " .. Config[configSection][configKey] .. " >",
+        TextColor3 = Color3.new(1,1,1), Font = Enum.Font.GothamBold, TextSize = 11, ZIndex = 5, Parent = Frame
+    })
+    Instance.new("UICorner", SelectorButton).CornerRadius = UDim.new(0, 6)
+    
+    SelectorButton.MouseButton1Click:Connect(function()
+        if not UI.Active then return end
+        local currentIndex = 1
+        for i, option in ipairs(options) do
+            if Config[configSection][configKey] == option then
+                currentIndex = i
+                break
+            end
+        end
+        local nextIndex = (currentIndex % #options) + 1
+        Config[configSection][configKey] = options[nextIndex]
+        SelectorButton.Text = "< " .. options[nextIndex] .. " >"
+    end)
+end
+
 -- Combat System
 local Combat = {}
 function Combat:GetClosestPlayer()
@@ -450,7 +495,14 @@ function Combat:GetClosestPlayer()
     local shortestDistance = Config.Combat.FOV
     for _, player in pairs(Players:GetPlayers()) do
         if player ~= LocalPlayer and player.Character then
-            local part = player.Character:FindFirstChild(Config.Combat.TargetPart) or player.Character:FindFirstChildOfClass("MeshPart") or player.Character:FindFirstChild("HumanoidRootPart")
+            -- Try to find the selected target part, with fallbacks
+            local part = player.Character:FindFirstChild(Config.Combat.TargetPart) 
+                or player.Character:FindFirstChild("Head")
+                or player.Character:FindFirstChild("UpperTorso")
+                or player.Character:FindFirstChild("Torso")
+                or player.Character:FindFirstChild("HumanoidRootPart")
+                or player.Character:FindFirstChildOfClass("MeshPart")
+            
             if part then
                 local screenPos, onScreen = Camera:WorldToViewportPoint(part.Position)
                 if onScreen then
@@ -473,7 +525,14 @@ function Combat:IsTargetValid(target)
     local hum = target.Character:FindFirstChildOfClass("Humanoid")
     if not hum or hum.Health <= 0 then return false end
     
-    local part = target.Character:FindFirstChild(Config.Combat.TargetPart) or target.Character:FindFirstChildOfClass("MeshPart") or target.Character:FindFirstChild("HumanoidRootPart")
+    -- Try to find the selected target part, with fallbacks
+    local part = target.Character:FindFirstChild(Config.Combat.TargetPart) 
+        or target.Character:FindFirstChild("Head")
+        or target.Character:FindFirstChild("UpperTorso")
+        or target.Character:FindFirstChild("Torso")
+        or target.Character:FindFirstChild("HumanoidRootPart")
+        or target.Character:FindFirstChildOfClass("MeshPart")
+    
     if not part then return false end
     
     local screenPos, onScreen = Camera:WorldToViewportPoint(part.Position)
@@ -486,60 +545,21 @@ function Combat:IsTargetValid(target)
     return distance <= Config.Combat.FOV
 end
 
--- Universal Shooting Function (Optimized for Xeno and other executors)
+-- Universal Shooting Function (Maximum Performance)
+local VirtualUser = game:GetService("VirtualUser")
 local function Shoot()
     local char = LocalPlayer.Character
     if not char then return end
     
-    -- Method 1: Tool Activation (works in most games)
+    -- Method 1: Tool Activation (fastest and most reliable)
     local tool = char:FindFirstChildOfClass("Tool")
     if tool then
         tool:Activate()
-        task.wait(0.01)
+        return
     end
     
-    -- Method 2: UserInputService click simulation (Xeno-compatible)
-    pcall(function()
-        local UIS = game:GetService("UserInputService")
-        UIS:GetMouseButtonDown(Enum.UserInputType.MouseButton1)
-    end)
-    
-    -- Method 3: VirtualInputManager (alternative method)
-    pcall(function()
-        local VIM = game:GetService("VirtualInputManager")
-        VIM:SendMouseButtonEvent(Mouse.X, Mouse.Y, 0, true, game, 1)
-        task.wait(0.05)
-        VIM:SendMouseButtonEvent(Mouse.X, Mouse.Y, 0, false, game, 1)
-    end)
-    
-    -- Method 4: Mouse1Click direct (for Xeno)
-    pcall(function()
-        if mousemouseclick then
-            mousemouseclick()
-        elseif mouse1click then
-            mouse1click()
-        end
-    end)
-    
-    -- Method 5: Input object creation (Xeno-friendly)
-    pcall(function()
-        game:GetService("VirtualUser"):Button1Down(Vector2.new(Mouse.X, Mouse.Y))
-        task.wait(0.05)
-        game:GetService("VirtualUser"):Button1Up(Vector2.new(Mouse.X, Mouse.Y))
-    end)
-    
-    -- Method 6: Remote event firing (game-specific)
-    pcall(function()
-        for _, descendant in pairs(game:GetDescendants()) do
-            if descendant:IsA("RemoteEvent") then
-                local name = descendant.Name:lower()
-                if name:find("shoot") or name:find("fire") or name:find("attack") or name:find("damage") then
-                    descendant:FireServer()
-                    break
-                end
-            end
-        end
-    end)
+    -- Method 2: VirtualUser (lightweight alternative)
+    VirtualUser:Button1Down(Vector2.new(0, 0))
 end
 
 -- Universal Team Detection System
@@ -678,62 +698,68 @@ RunService.RenderStepped:Connect(function()
         if target and target.Character then
             -- Verify it's an enemy
             if IsEnemy(target, Config.Combat.TeamCheck) then
-                local targetPart = target.Character:FindFirstChild(Config.Combat.TargetPart) or target.Character:FindFirstChildOfClass("MeshPart") or target.Character:FindFirstChild("HumanoidRootPart")
+                -- Try to find the selected target part, with fallbacks
+                local targetPart = target.Character:FindFirstChild(Config.Combat.TargetPart)
+                    or target.Character:FindFirstChild("Head")
+                    or target.Character:FindFirstChild("UpperTorso")
+                    or target.Character:FindFirstChild("Torso")
+                    or target.Character:FindFirstChild("HumanoidRootPart")
+                    or target.Character:FindFirstChildOfClass("MeshPart")
+                
                 if targetPart then
                     local targetCFrame = CFrame.new(Camera.CFrame.Position, targetPart.Position)
                     Camera.CFrame = Camera.CFrame:Lerp(targetCFrame, Config.Combat.Smoothness * 0.1)
-                    
-                    -- Auto Shoot if enabled and target is locked
-                    if Config.Combat.AutoShoot and Config.Combat.LockedTarget then
-                        local currentTime = tick()
-                        if currentTime - lastAimShootTime >= Config.Combat.ShootDelay then
-                            Shoot()
-                            lastAimShootTime = currentTime
-                        end
-                    end
                 end
             end
         end
     end
 end)
 
--- Triggerbot System (Optimized - No Lag)
+-- Auto Shoot for Locked Target (Separate optimized loop)
+task.spawn(function()
+    while task.wait(0.05) do -- Check every 50ms (20 fps)
+        if UI.Active and Config.Combat.AutoShoot and Config.Combat.LockedTarget then
+            local currentTime = tick()
+            if currentTime - lastAimShootTime >= Config.Combat.ShootDelay then
+                -- Verify target is still valid and is enemy
+                if Combat:IsTargetValid(Config.Combat.LockedTarget) and IsEnemy(Config.Combat.LockedTarget, Config.Combat.TeamCheck) then
+                    Shoot()
+                    lastAimShootTime = currentTime
+                end
+            end
+        end
+    end
+end)
+
+-- Triggerbot System (Maximum Performance - Zero Lag)
 local lastTriggerTime = 0
-local lastTriggerCheck = 0
-local triggerCheckInterval = 0.05 -- Check every 50ms instead of every frame
 
 task.spawn(function()
-    while task.wait(0.05) do
+    while task.wait(0.2) do -- Check every 200ms (5 times per second) for zero lag
         if UI.Active and Config.Combat.Triggerbot then
             local currentTime = tick()
             
             if currentTime - lastTriggerTime >= Config.Combat.TriggerDelay then
+                -- Direct, fast checks - no pcall overhead
                 local char = LocalPlayer.Character
-                if char then
-                    -- Check if mouse is hovering over an enemy
-                    local mouseTarget = Mouse.Target
-                    if mouseTarget then
-                        local targetPlayer = nil
-                        local targetChar = mouseTarget:FindFirstAncestorOfClass("Model")
-                        
-                        if targetChar then
-                            targetPlayer = Players:GetPlayerFromCharacter(targetChar)
-                        end
-                        
-                        if targetPlayer and targetPlayer ~= LocalPlayer then
-                            -- Check if it's an enemy
-                            if IsEnemy(targetPlayer, Config.Combat.TeamCheck) then
-                                -- Check if player is alive
-                                local hum = targetChar:FindFirstChildOfClass("Humanoid")
-                                if hum and hum.Health > 0 then
-                                    -- Shoot
-                                    Shoot()
-                                    lastTriggerTime = currentTime
-                                end
-                            end
-                        end
-                    end
-                end
+                if not char then continue end
+                
+                local mouseTarget = Mouse.Target
+                if not mouseTarget then continue end
+                
+                local targetChar = mouseTarget:FindFirstAncestorOfClass("Model")
+                if not targetChar then continue end
+                
+                local targetPlayer = Players:GetPlayerFromCharacter(targetChar)
+                if not targetPlayer or targetPlayer == LocalPlayer then continue end
+                
+                if not IsEnemy(targetPlayer, Config.Combat.TeamCheck) then continue end
+                
+                local hum = targetChar:FindFirstChildOfClass("Humanoid")
+                if not hum or hum.Health <= 0 then continue end
+                
+                Shoot()
+                lastTriggerTime = currentTime
             end
         end
     end
@@ -1018,48 +1044,52 @@ InfiniteJumpConnection = UserInputService.InputBegan:Connect(function(input, gam
     end
 end)
 
--- Kill Aura System (with Auto Aim + Auto Shoot + Team Check)
-local lastShootTime = 0
-local shootDelay = 0.1 -- Delay between shots
+-- Kill Aura System (Optimized - with Auto Aim + Auto Shoot + Team Check)
+local lastKillAuraShootTime = 0
+local killAuraShootDelay = 0.15
 
-RunService.Heartbeat:Connect(function()
-    if not Config.Misc.KillAura or not UI.Active then return end
-    local char = LocalPlayer.Character
-    if not char then return end
-    local rootPart = char:FindFirstChild("HumanoidRootPart")
-    if not rootPart then return end
-    
-    local closestEnemy = nil
-    local closestDistance = Config.Misc.KillAuraRange
-    
-    -- Find closest enemy in range
-    for _, player in pairs(Players:GetPlayers()) do
-        if IsEnemy(player, Config.Misc.KillAuraTeamCheck) and player.Character then
-            local enemyRoot = player.Character:FindFirstChild("HumanoidRootPart")
-            local enemyHum = player.Character:FindFirstChildOfClass("Humanoid")
-            if enemyRoot and enemyHum and enemyHum.Health > 0 then
-                local distance = (rootPart.Position - enemyRoot.Position).Magnitude
-                if distance <= Config.Misc.KillAuraRange and distance < closestDistance then
-                    closestEnemy = player
-                    closestDistance = distance
+task.spawn(function()
+    while task.wait(0.1) do -- Check every 100ms instead of every frame
+        if not Config.Misc.KillAura or not UI.Active then continue end
+        
+        local char = LocalPlayer.Character
+        if not char then continue end
+        
+        local rootPart = char:FindFirstChild("HumanoidRootPart")
+        if not rootPart then continue end
+        
+        local closestEnemy = nil
+        local closestDistance = Config.Misc.KillAuraRange
+        
+        -- Find closest enemy in range
+        for _, player in pairs(Players:GetPlayers()) do
+            if IsEnemy(player, Config.Misc.KillAuraTeamCheck) and player.Character then
+                local enemyRoot = player.Character:FindFirstChild("HumanoidRootPart")
+                local enemyHum = player.Character:FindFirstChildOfClass("Humanoid")
+                if enemyRoot and enemyHum and enemyHum.Health > 0 then
+                    local distance = (rootPart.Position - enemyRoot.Position).Magnitude
+                    if distance <= Config.Misc.KillAuraRange and distance < closestDistance then
+                        closestEnemy = player
+                        closestDistance = distance
+                    end
                 end
             end
         end
-    end
-    
-    -- Auto aim and attack closest enemy
-    if closestEnemy and closestEnemy.Character then
-        local targetPart = closestEnemy.Character:FindFirstChild("Head") or closestEnemy.Character:FindFirstChild("HumanoidRootPart")
-        if targetPart then
-            -- Auto aim to target
-            local targetCFrame = CFrame.new(Camera.CFrame.Position, targetPart.Position)
-            Camera.CFrame = targetCFrame
-            
-            -- Auto shoot with delay
-            local currentTime = tick()
-            if currentTime - lastShootTime >= shootDelay then
-                Shoot()
-                lastShootTime = currentTime
+        
+        -- Auto aim and attack closest enemy
+        if closestEnemy and closestEnemy.Character then
+            local targetPart = closestEnemy.Character:FindFirstChild("Head") or closestEnemy.Character:FindFirstChild("HumanoidRootPart")
+            if targetPart then
+                -- Auto aim to target
+                local targetCFrame = CFrame.new(Camera.CFrame.Position, targetPart.Position)
+                Camera.CFrame = targetCFrame
+                
+                -- Auto shoot with delay
+                local currentTime = tick()
+                if currentTime - lastKillAuraShootTime >= killAuraShootDelay then
+                    Shoot()
+                    lastKillAuraShootTime = currentTime
+                end
             end
         end
     end
@@ -1208,6 +1238,7 @@ local MiscPage = UI:CreateTab("Misc")
 
 -- Combat Controls
 UI:CreateToggle(CombatPage, "Aim Assist", "Combat", "SilentAim")
+UI:CreateSelector(CombatPage, "Target Body Part", "Combat", "TargetPart", {"Head", "UpperTorso", "Torso", "HumanoidRootPart"})
 UI:CreateToggle(CombatPage, "Hold to Aim", "Combat", "HoldToAim")
 UI:CreateKeybind(CombatPage, "Aim Hold Key", "Combat", "AimHoldKey")
 UI:CreateToggle(CombatPage, "Team Check", "Combat", "TeamCheck")

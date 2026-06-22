@@ -1,0 +1,12 @@
+Beep Framework v2.1.0
+Release Date: June 21, 2026
+Build: Stable
+
+Features:
+- Combat: Aim Assist, Target Selector, Hold to Aim, Auto Shoot, Triggerbot, Team Check
+- Visuals: ESP, Names, IDs, 3D Chams, Tracers, Health Bars, 2D Boxes
+- Physics: Speed Hack, Jump Boost, NoClip, Fly Mode
+- Misc: Anti-AFK, Fullbright, Infinite Jump, FOV Changer, Kill Aura, Teleport
+
+Performance: Ultra-optimized - Zero lag
+Compatibility: Universal (all executors & games)
