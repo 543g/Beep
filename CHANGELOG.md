@@ -7,7 +7,6 @@
    - Uses metamethod hooking for maximum stealth
    - Redirects bullets without moving your view
    - Works with all weapons
-   - Toggle: F5 keybind
 
 2. **Hitbox Expander** - Makes enemy hitboxes larger
    - Adjustable size: 1-20 studs
@@ -23,28 +22,21 @@
    - Team colors: Red=Enemy, Green=Teammate
    - Real-time position updates
 
-4. **Keybind System** - Quick toggle with hotkeys
-   - 5 configurable keybinds
-   - Must enable feature in menu first (security)
-   - Customizable keys in Misc tab
-   - Notifications when toggling
+4. **Toggle Keys** - Quick access hotkeys
+   - ESP Toggle (F1 default) - Customizable in Misc tab
+   - NoClip Toggle (F2 default) - Customizable in Misc tab
+   - Works like Speed and Fly toggle keys
 
-### 🔐 SECURITY
-- **Keybind Protection** - Keybinds only work if feature is already enabled in UI
-- Prevents accidental activation
-- Prevents unauthorized use
-
-### ⌨️ DEFAULT KEYBINDS
+### ⌨️ TOGGLE KEYS (Customizable)
 - **F1** - ESP Toggle
-- **F2** - Aim Assist Toggle
-- **F3** - Fly Toggle
-- **F4** - NoClip Toggle
-- **F5** - Silent Aim Toggle
+- **F2** - NoClip Toggle
+- **E** - Fly Toggle (already existed)
+- **LeftControl** - Speed Toggle (already existed)
 
 ### 📦 UPDATED FEATURE COUNT
-**Total: 48 Features** (was 43)
+**Total: 46 Features**
 
-**Combat Tab (23 features - +3 new):**
+**Combat Tab (23 features):**
 ✅ Aim Assist with FOV control
 ✅ **Silent Aim (NEW)**
 ✅ **Hitbox Expander (NEW)**
@@ -61,7 +53,7 @@
 ✅ Kill Aura + Auto Aim
 ✅ Team Check
 
-**Visual Tab (10 features - +1 new):**
+**Visual Tab (10 features):**
 ✅ Enable ESP
 ✅ Show Names
 ✅ Show Distance
@@ -73,24 +65,21 @@
 ✅ Health Bars
 ✅ 2D Box ESP
 
-**Misc Tab (11 features - +5 new):**
+**Misc Tab (8 features):**
 ✅ Watermark
 ✅ Remove Fog
 ✅ Anti-AFK
 ✅ Fullbright
 ✅ FOV Changer
 ✅ Theme Changer
-✅ **ESP Toggle Keybind (NEW)**
-✅ **Aim Assist Toggle Keybind (NEW)**
-✅ **Fly Toggle Keybind (NEW)**
-✅ **NoClip Toggle Keybind (NEW)**
-✅ **Silent Aim Toggle Keybind (NEW)**
+✅ **ESP Toggle Key (NEW)**
+✅ **NoClip Toggle Key (NEW)**
 
 ### 🎯 TECHNICAL DETAILS
 - Silent Aim uses `__namecall` metamethod hooking
 - Hitbox Expander runs on Heartbeat for real-time updates
 - Skeleton ESP uses Drawing API for performance
-- Keybinds use centralized InputBegan handler
+- Toggle keys work like Speed and Fly (simple and effective)
 - All new features respect team check settings
 
 ---

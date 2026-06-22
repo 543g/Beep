@@ -93,14 +93,9 @@ local Config = {
         AntiAFK = false,
         RemoveFog = false,
         Watermark = true,
-        ThemeColor = 1
-    },
-    Keybinds = {
-        ESPToggle = "F1",
-        AimAssistToggle = "F2",
-        FlyToggle = "F3",
-        NoClipToggle = "F4",
-        SilentAimToggle = "F5"
+        ThemeColor = 1,
+        ESPToggleKey = "F1",
+        NoClipToggleKey = "F2"
     },
     UI = {
         ThemeColors = {
@@ -1047,58 +1042,23 @@ pcall(function()
     end)
 end)
 
--- Keybind System (Only works if feature is already enabled in UI)
+-- ESP Toggle Key
 UserInputService.InputBegan:Connect(function(input, gameProcessed)
-    if gameProcessed or not UI.Active then return end
+    if not UI.Active or gameProcessed then return end
     
-    local keyName = input.KeyCode.Name
-    
-    -- ESP Toggle (only if ESP was enabled in menu first)
-    if keyName == Config.Keybinds.ESPToggle and Config.Visuals.Enabled then
-        Config.Visuals.Enabled = false
-        UI:Notify("ESP: OFF (Press to re-enable)")
-    elseif keyName == Config.Keybinds.ESPToggle and not Config.Visuals.Enabled then
-        -- Try to enable it
-        Config.Visuals.Enabled = true
-        UI:Notify("ESP: ON")
+    if input.KeyCode.Name == Config.Misc.ESPToggleKey then
+        Config.Visuals.Enabled = not Config.Visuals.Enabled
+        UI:Notify(Config.Visuals.Enabled and "ESP: ON" or "ESP: OFF")
     end
+end)
+
+-- NoClip Toggle Key
+UserInputService.InputBegan:Connect(function(input, gameProcessed)
+    if not UI.Active or gameProcessed then return end
     
-    -- Aim Assist Toggle (only if Aim Assist was enabled in menu first)
-    if keyName == Config.Keybinds.AimAssistToggle and Config.Combat.SilentAim then
-        Config.Combat.SilentAim = false
-        UI:Notify("Aim Assist: OFF")
-    elseif keyName == Config.Keybinds.AimAssistToggle and not Config.Combat.SilentAim then
-        Config.Combat.SilentAim = true
-        UI:Notify("Aim Assist: ON")
-    end
-    
-    -- Fly Toggle (only if Fly was enabled in menu first)
-    if keyName == Config.Keybinds.FlyToggle and Config.Physics.Fly then
-        Config.Physics.Fly = false
-        DisableFly()
-        UI:Notify("Fly: OFF")
-    elseif keyName == Config.Keybinds.FlyToggle and not Config.Physics.Fly then
-        Config.Physics.Fly = true
-        EnableFly()
-        UI:Notify("Fly: ON")
-    end
-    
-    -- NoClip Toggle (only if NoClip was enabled in menu first)
-    if keyName == Config.Keybinds.NoClipToggle and Config.Physics.NoClip then
-        Config.Physics.NoClip = false
-        UI:Notify("NoClip: OFF")
-    elseif keyName == Config.Keybinds.NoClipToggle and not Config.Physics.NoClip then
-        Config.Physics.NoClip = true
-        UI:Notify("NoClip: ON")
-    end
-    
-    -- Silent Aim Toggle (only if Silent Aim was enabled in menu first)
-    if keyName == Config.Keybinds.SilentAimToggle and Config.Combat.SilentAimEnabled then
-        Config.Combat.SilentAimEnabled = false
-        UI:Notify("Silent Aim: OFF")
-    elseif keyName == Config.Keybinds.SilentAimToggle and not Config.Combat.SilentAimEnabled then
-        Config.Combat.SilentAimEnabled = true
-        UI:Notify("Silent Aim: ON")
+    if input.KeyCode.Name == Config.Misc.NoClipToggleKey then
+        Config.Physics.NoClip = not Config.Physics.NoClip
+        UI:Notify(Config.Physics.NoClip and "NoClip: ON" or "NoClip: OFF")
     end
 end)
 
@@ -1850,23 +1810,8 @@ UI:CreateToggle(MiscPage, "Anti-AFK", "Misc", "AntiAFK")
 UI:CreateToggle(MiscPage, "Fullbright", "Misc", "Fullbright")
 UI:CreateToggle(MiscPage, "FOV Changer", "Misc", "FOVChanger")
 UI:CreateSlider(MiscPage, "FOV Value", 70, 120, "Misc", "FOVValue")
-
--- Keybind Configuration
-local KeybindFrame = UI:Create("Frame", {Size = UDim2.new(1, -10, 0, 200), BackgroundColor3 = Color3.fromRGB(22, 18, 32), ZIndex = 4, Parent = MiscPage})
-Instance.new("UICorner", KeybindFrame).CornerRadius = UDim.new(0, 6)
-
-UI:Create("TextLabel", {
-    Size = UDim2.new(1, -20, 0, 25), Position = UDim2.new(0, 10, 0, 5),
-    BackgroundTransparency = 1, Text = "Keybinds (Must enable feature in menu first)",
-    TextColor3 = Config.Visuals.Accent, Font = Enum.Font.GothamBold, TextSize = 12,
-    TextXAlignment = Enum.TextXAlignment.Left, ZIndex = 5, Parent = KeybindFrame
-})
-
-UI:CreateKeybind(MiscPage, "ESP Toggle", "Keybinds", "ESPToggle")
-UI:CreateKeybind(MiscPage, "Aim Assist Toggle", "Keybinds", "AimAssistToggle")
-UI:CreateKeybind(MiscPage, "Fly Toggle", "Keybinds", "FlyToggle")
-UI:CreateKeybind(MiscPage, "NoClip Toggle", "Keybinds", "NoClipToggle")
-UI:CreateKeybind(MiscPage, "Silent Aim Toggle", "Keybinds", "SilentAimToggle")
+UI:CreateKeybind(MiscPage, "ESP Toggle Key", "Misc", "ESPToggleKey")
+UI:CreateKeybind(MiscPage, "NoClip Toggle Key", "Misc", "NoClipToggleKey")
 
 -- Theme Changer
 local ThemeFrame = UI:Create("Frame", {Size = UDim2.new(1, -10, 0, 70), BackgroundColor3 = Color3.fromRGB(22, 18, 32), ZIndex = 4, Parent = MiscPage})
