@@ -2,7 +2,7 @@
 -- Universal ESP, Aimbot & Physics Controller
 
 -- VERSION CONTROL (Update this for each new version)
-local BEEP_VERSION = "v3.5.5"
+local BEEP_VERSION = "v3.5.8"
 
 local StartTime = tick()
 if not game:IsLoaded() then
@@ -85,7 +85,10 @@ local Config = {
         RagebotNoClip = true,
         RagebotGameProfile = "Auto",
         RagebotFaceTarget = true,
-        RagebotIgnoreImmune = true
+        RagebotIgnoreImmune = true,
+        -- RIVALS Specific Features
+        RagebotWallbang = false,      -- Shoot +5 studs above target to pass walls
+        RagebotWallbangOffset = 5     -- Height offset for wallbang (studs)
     },
     Physics = {
         Speed = 1,
@@ -1305,6 +1308,12 @@ RunService.RenderStepped:Connect(function(dt)
 
     local settings = ragebotSettings()
     local aimPos = target.Position
+    
+    -- RIVALS WALLBANG: Add vertical offset to shoot over walls
+    if Config.Combat.RagebotWallbang then
+        aimPos = aimPos + Vector3.new(0, Config.Combat.RagebotWallbangOffset, 0)
+    end
+    
     -- Prediction for projectile weapons (from active profile)
     if settings.prediction > 0 then
         local vel = target.AssemblyLinearVelocity
@@ -2288,6 +2297,8 @@ UI:CreateSlider(CombatPage, "Ragebot Keep Distance", 2, 30, "Combat", "RagebotTP
 UI:CreateToggle(CombatPage, "Ragebot NoClip (pass walls)", "Combat", "RagebotNoClip")
 UI:CreateToggle(CombatPage, "Ragebot Face Target (body aim)", "Combat", "RagebotFaceTarget")
 UI:CreateToggle(CombatPage, "Ragebot Ignore Immune (ForceField)", "Combat", "RagebotIgnoreImmune")
+UI:CreateToggle(CombatPage, "Ragebot Wallbang (+Y offset)", "Combat", "RagebotWallbang")
+UI:CreateSlider(CombatPage, "Ragebot Wallbang Offset", 1, 20, "Combat", "RagebotWallbangOffset")
 
 -- Visual Controls
 UI:CreateToggle(VisualsPage, "Enable ESP", "Visuals", "Enabled")

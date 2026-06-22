@@ -1,6 +1,27 @@
-Beep Framework v3.5.7
+Beep Framework v3.5.8
 Release Date: June 22, 2026
-Build: Stable - INVISIBILITY REMOVED
+Build: Stable - RAGEBOT WALLBANG ADDED
+
+==============================================
+v3.5.8 - RAGEBOT WALLBANG (RIVALS)
+==============================================
+🎯 Nueva Feature: WALLBANG con Height Offset
+- Dispara +Y studs arriba del target para pasar paredes
+- Toggle: "Ragebot Wallbang (+Y offset)"
+- Slider: "Ragebot Wallbang Offset" (1-20 studs, default: 5)
+- Útil en RIVALS para disparar sobre obstáculos bajos
+- Funciona con cualquier modo de ragebot (Closest/Lowest Health/Crosshair)
+
+Mecánica:
+- Agrega Vector3.new(0, offset, 0) a la posición del target
+- El offset es ajustable (1-20 studs)
+- Combina con predicción si está activa
+- Ideal para mapas con paredes/cobertura baja
+
+Uso recomendado:
+- RIVALS: offset 5-8 studs
+- Mapas con cobertura alta: offset 10-15 studs
+- Combinar con "Ragebot Face Target" para mejor precisión
 
 ==============================================
 v3.5.7 - INVISIBILITY SYSTEM REMOVED
