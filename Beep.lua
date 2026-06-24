@@ -964,15 +964,17 @@ local function HSVtoRGB(h, s, v)
 end
 
 -- Color Picker Component (compact, Beep style)
+-- Only calls callback and shows notification when OK is pressed
 function UI:CreateColorPicker(parent, text, configSection, configKey, callback)
     local Frame = UI:Create("Frame", {Size = UDim2.new(1, -10, 0, 42), BackgroundColor3 = Color3.fromRGB(18, 18, 24), ZIndex = 4, Parent = parent})
     Instance.new("UICorner", Frame).CornerRadius = UDim.new(0, 8)
     UI:Create("UIStroke", {Color = Color3.fromRGB(32, 32, 40), Thickness = 1, Transparency = 0.4, Parent = Frame})
     
-    UI:Create("TextLabel", {Size = UDim2.new(0.4, 0, 1, 0), Position = UDim2.new(0, 14, 0, 0), BackgroundTransparency = 1, Text = text, TextColor3 = Color3.fromRGB(225, 226, 232), Font = Enum.Font.Gotham, TextSize = 13, TextXAlignment = Enum.TextXAlignment.Left, ZIndex = 5, Parent = Frame})
+    UI:Create("TextLabel", {Size = UDim2.new(0.5, 0, 1, 0), Position = UDim2.new(0, 14, 0, 0), BackgroundTransparency = 1, Text = text, TextColor3 = Color3.fromRGB(225, 226, 232), Font = Enum.Font.Gotham, TextSize = 13, TextXAlignment = Enum.TextXAlignment.Left, ZIndex = 5, Parent = Frame})
     
     local currentColor = Config[configSection][configKey]
     local currentHue, currentSat, currentVal = 0, 1, 1
+    local previewColor = currentColor -- Color while dragging (not applied yet)
     
     -- Color preview button (click to open picker)
     local ColorBtn = UI:Create("TextButton", {
@@ -985,20 +987,31 @@ function UI:CreateColorPicker(parent, text, configSection, configKey, callback)
     local pickerOpen = false
     local PickerFrame = nil
     
-    local function updateColor(color)
+    -- Apply color only when OK is pressed
+    local function applyColor(color)
         Config[configSection][configKey] = color
         ColorBtn.BackgroundColor3 = color
+        currentColor = color
+        -- If it's Theme/Accent, refresh all accent elements
+        if configKey == "Accent" then
+            RefreshAccent(color)
+        end
         if callback then callback(color) end
+        UI:Notify("Color changed")
     end
     
-    local function closePicker()
+    local function closePicker(apply)
+        if apply and previewColor then
+            applyColor(previewColor)
+        end
         if PickerFrame then PickerFrame:Destroy() PickerFrame = nil end
         pickerOpen = false
     end
     
     ColorBtn.MouseButton1Click:Connect(function()
-        if pickerOpen then closePicker() return end
+        if pickerOpen then closePicker(false) return end
         pickerOpen = true
+        previewColor = currentColor
         
         local btnPos = ColorBtn.AbsolutePosition
         
@@ -1073,22 +1086,25 @@ function UI:CreateColorPicker(parent, text, configSection, configKey, callback)
         })
         Instance.new("UICorner", Preview).CornerRadius = UDim.new(0, 4)
         
-        -- Close button
-        local CloseBtn = UI:Create("TextButton", {
+        -- OK button (applies the color)
+        local OKBtn = UI:Create("TextButton", {
             Size = UDim2.new(0, 40, 0, 24), Position = UDim2.new(0, 130, 0, 120),
-            BackgroundColor3 = Color3.fromRGB(40, 40, 50), Text = "OK",
+            BackgroundColor3 = Color3.fromRGB(60, 140, 60), Text = "OK",
             TextColor3 = Color3.new(1,1,1), Font = Enum.Font.GothamBold, TextSize = 10,
             ZIndex = 201, Parent = PickerFrame
         })
-        Instance.new("UICorner", CloseBtn).CornerRadius = UDim.new(0, 4)
-        CloseBtn.MouseButton1Click:Connect(closePicker)
+        Instance.new("UICorner", OKBtn).CornerRadius = UDim.new(0, 4)
+        OKBtn.MouseButton1Click:Connect(function()
+            closePicker(true) -- Apply color on OK
+        end)
         
-        local function updateFromHSV()
+        -- Update preview only (not applied until OK)
+        local function updatePreview()
             local color = HSVtoRGB(currentHue, currentSat, currentVal)
             SVBox.BackgroundColor3 = HSVtoRGB(currentHue, 1, 1)
             Preview.BackgroundColor3 = color
             HexInput.Text = string.format("%02X%02X%02X", math.floor(color.R*255), math.floor(color.G*255), math.floor(color.B*255))
-            updateColor(color)
+            previewColor = color
         end
         
         -- SV drag
@@ -1117,13 +1133,13 @@ function UI:CreateColorPicker(parent, text, configSection, configKey, callback)
                     currentSat = x
                     currentVal = 1 - y
                     SVCursor.Position = UDim2.new(x, 0, y, 0)
-                    updateFromHSV()
+                    updatePreview()
                 end
                 if draggingHue then
                     local y = math.clamp((input.Position.Y - HueBar.AbsolutePosition.Y) / HueBar.AbsoluteSize.Y, 0, 1)
                     currentHue = y
                     HueCursor.Position = UDim2.new(0.5, 0, y, 0)
-                    updateFromHSV()
+                    updatePreview()
                 end
             end
         end)
@@ -1133,13 +1149,17 @@ function UI:CreateColorPicker(parent, text, configSection, configKey, callback)
             if color and hex then
                 HexInput.Text = hex
                 Preview.BackgroundColor3 = color
-                updateColor(color)
+                previewColor = color
             end
         end)
     end)
     
-    if configKey == "Accent" then
-        RegisterAccent(function(c) ColorBtn.BackgroundColor3 = c end)
+    if configKey == "Accent" or configKey == "ESPColor" then
+        RegisterAccent(function(c)
+            if configKey == "Accent" then
+                ColorBtn.BackgroundColor3 = c
+            end
+        end)
     end
 end
 
@@ -2612,9 +2632,7 @@ UI:CreateToggle(VisualsPage, "3D Boxes / Chams", "Visuals", "Skeletons")
 UI:CreateToggle(VisualsPage, "Tracers", "Visuals", "Tracers")
 UI:CreateToggle(VisualsPage, "Health Bars", "Visuals", "HealthBars")
 UI:CreateToggle(VisualsPage, "2D Box ESP", "Visuals", "BoxESP")
-UI:CreateColorInput(VisualsPage, "ESP Color (HEX)", "Visuals", "ESPColor", function(color)
-    UI:Notify("ESP color changed")
-end)
+UI:CreateColorInput(VisualsPage, "ESP Color", "Visuals", "ESPColor")
 
 -- Physics Controls
 UI:CreateToggle(PhysicsPage, "Enable Speed Hack", "Physics", "SpeedEnabled")
@@ -2646,103 +2664,8 @@ UI:CreateSlider(MiscPage, "FOV Value", 70, 120, "Misc", "FOVValue")
 UI:CreateKeybind(MiscPage, "NoClip Toggle Key", "Misc", "NoClipToggleKey")
 UI:CreateKeybind(MiscPage, "PANIC Key (stop all)", "Misc", "PanicKey")
 
--- Theme Changer
-local ThemeFrame = UI:Create("Frame", {Size = UDim2.new(1, -10, 0, 115), BackgroundColor3 = Color3.fromRGB(18, 18, 24), ZIndex = 4, Parent = MiscPage})
-Instance.new("UICorner", ThemeFrame).CornerRadius = UDim.new(0, 6)
-
-UI:Create("TextLabel", {
-    Size = UDim2.new(1, -20, 0, 25), Position = UDim2.new(0, 10, 0, 5),
-    BackgroundTransparency = 1, Text = "Theme Color",
-    TextColor3 = Color3.new(1,1,1), Font = Enum.Font.GothamBold, TextSize = 13,
-    TextXAlignment = Enum.TextXAlignment.Left, ZIndex = 5, Parent = ThemeFrame
-})
-
-local ThemeContainer = UI:Create("Frame", {
-    Size = UDim2.new(1, -20, 0, 30), Position = UDim2.new(0, 10, 0, 30),
-    BackgroundTransparency = 1, ZIndex = 5, Parent = ThemeFrame
-})
-
-local function isLightThemeColor(c)
-    return (c.R * 255 + c.G * 255 + c.B * 255) / 3 > 180
-end
-
-local themeNames = {"White", "Red", "Blue", "Green", "Yellow", "Pink"}
-for i, color in ipairs(Config.UI.ThemeColors) do
-    local ThemeBtn = UI:Create("TextButton", {
-        Size = UDim2.new(0, 70, 0, 28),
-        Position = UDim2.new(0, (i-1) * 75, 0, 0),
-        BackgroundColor3 = color,
-        Text = themeNames[i],
-        TextColor3 = isLightThemeColor(color) and Color3.new(0,0,0) or Color3.new(1,1,1),
-        Font = Enum.Font.GothamBold,
-        TextSize = 10,
-        ZIndex = 6,
-        Parent = ThemeContainer
-    })
-    Instance.new("UICorner", ThemeBtn).CornerRadius = UDim.new(0, 6)
-    
-    ThemeBtn.MouseButton1Click:Connect(function()
-        Config.Misc.ThemeColor = i
-        Config.Visuals.Accent = color
-        RefreshAccent(color)
-        UI:Notify("Theme: " .. themeNames[i])
-    end)
-end
-
--- Custom Theme HEX Input
-UI:Create("TextLabel", {
-    Size = UDim2.new(0, 80, 0, 20), Position = UDim2.new(0, 10, 0, 65),
-    BackgroundTransparency = 1, Text = "Custom HEX:",
-    TextColor3 = Color3.fromRGB(180, 180, 190), Font = Enum.Font.Gotham, TextSize = 11,
-    TextXAlignment = Enum.TextXAlignment.Left, ZIndex = 5, Parent = ThemeFrame
-})
-
-local CustomThemePreview = UI:Create("Frame", {
-    Size = UDim2.new(0, 26, 0, 26), Position = UDim2.new(0, 95, 0, 82),
-    BackgroundColor3 = Config.Visuals.Accent, ZIndex = 5, Parent = ThemeFrame
-})
-Instance.new("UICorner", CustomThemePreview).CornerRadius = UDim.new(0, 6)
-RegisterAccent(function(c) CustomThemePreview.BackgroundColor3 = c end)
-
-local CustomThemeInput = UI:Create("TextBox", {
-    Size = UDim2.new(0, 80, 0, 26), Position = UDim2.new(0, 130, 0, 82),
-    BackgroundColor3 = Color3.fromRGB(28, 28, 36),
-    Text = "FFFFFF",
-    TextColor3 = Color3.new(1,1,1), PlaceholderText = "FFFFFF",
-    Font = Enum.Font.GothamBold, TextSize = 11, 
-    ClearTextOnFocus = false, ZIndex = 5, Parent = ThemeFrame
-})
-Instance.new("UICorner", CustomThemeInput).CornerRadius = UDim.new(0, 6)
-
-local ApplyThemeBtn = UI:Create("TextButton", {
-    Size = UDim2.new(0, 60, 0, 26), Position = UDim2.new(0, 220, 0, 82),
-    BackgroundColor3 = Config.Visuals.Accent, Text = "Apply",
-    TextColor3 = isLightThemeColor(Config.Visuals.Accent) and Color3.new(0,0,0) or Color3.new(1,1,1),
-    Font = Enum.Font.GothamBold, TextSize = 10, ZIndex = 5, Parent = ThemeFrame
-})
-Instance.new("UICorner", ApplyThemeBtn).CornerRadius = UDim.new(0, 6)
-RegisterAccent(function(c) 
-    ApplyThemeBtn.BackgroundColor3 = c 
-    ApplyThemeBtn.TextColor3 = isLightThemeColor(c) and Color3.new(0,0,0) or Color3.new(1,1,1)
-end)
-
-ApplyThemeBtn.MouseButton1Click:Connect(function()
-    local hex = CustomThemeInput.Text:gsub("#", ""):upper()
-    if #hex == 6 then
-        local r = tonumber(hex:sub(1,2), 16)
-        local g = tonumber(hex:sub(3,4), 16)
-        local b = tonumber(hex:sub(5,6), 16)
-        if r and g and b then
-            local newColor = Color3.fromRGB(r, g, b)
-            Config.Visuals.Accent = newColor
-            RefreshAccent(newColor)
-            CustomThemeInput.Text = hex
-            UI:Notify("Custom theme applied")
-            return
-        end
-    end
-    UI:Notify("Invalid HEX")
-end)
+-- Theme Color Picker (same style as ESP color)
+UI:CreateColorPicker(MiscPage, "Theme Color", "Visuals", "Accent")
 
 -- Teleport to Player Section
 local TeleportFrame = UI:Create("Frame", {Size = UDim2.new(1, -10, 0, 90), BackgroundColor3 = Color3.fromRGB(18, 18, 24), ZIndex = 4, Parent = MiscPage})
