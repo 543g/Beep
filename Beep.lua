@@ -1537,32 +1537,39 @@ RunService.Heartbeat:Connect(function()
     end
 end)
 
--- Triggerbot System (Automatic & Fast - Respects Rapid Fire)
+-- Triggerbot System (Automatic & Fast - Works at any distance)
 local lastTriggerTime = 0
 local isAimingAtEnemy = false
 
 task.spawn(function()
-    while task.wait(0.05) do -- Check every 50ms (20 times per second) - Much faster!
+    while task.wait(0.05) do -- Check every 50ms (20 times per second)
         if UI.Active and Config.Combat.Triggerbot then
-            -- Direct, fast checks - no pcall overhead
             local char = LocalPlayer.Character
             if not char then 
                 isAimingAtEnemy = false
                 continue 
             end
             
-            -- Method 1: Mouse.Target
-            local mouseTarget = Mouse.Target
-            local targetPlayer = nil
-            
-            if mouseTarget then
-                local targetChar = mouseTarget:FindFirstAncestorOfClass("Model")
-                if targetChar then
-                    targetPlayer = Players:GetPlayerFromCharacter(targetChar)
-                end
+            local myRoot = char:FindFirstChild("HumanoidRootPart")
+            if not myRoot then
+                isAimingAtEnemy = false
+                continue
             end
             
-            -- Method 2: Raycast from camera if Mouse.Target fails
+            local targetPlayer = nil
+            
+            -- Method 1: Mouse.Target (works close range)
+            pcall(function()
+                local mouseTarget = Mouse.Target
+                if mouseTarget then
+                    local targetChar = mouseTarget:FindFirstAncestorOfClass("Model")
+                    if targetChar then
+                        targetPlayer = Players:GetPlayerFromCharacter(targetChar)
+                    end
+                end
+            end)
+            
+            -- Method 2: Raycast from camera (works any distance, ignores obstacles option)
             if not targetPlayer then
                 pcall(function()
                     local ray = Camera:ScreenPointToRay(Mouse.X, Mouse.Y)
@@ -1570,7 +1577,7 @@ task.spawn(function()
                     raycastParams.FilterType = Enum.RaycastFilterType.Blacklist
                     raycastParams.FilterDescendantsInstances = {char}
                     
-                    local result = Workspace:Raycast(ray.Origin, ray.Direction * 1000, raycastParams)
+                    local result = Workspace:Raycast(ray.Origin, ray.Direction * 5000, raycastParams)
                     if result and result.Instance then
                         local targetChar = result.Instance:FindFirstAncestorOfClass("Model")
                         if targetChar then
@@ -1580,6 +1587,38 @@ task.spawn(function()
                 end)
             end
             
+            -- Method 3: Check if crosshair is near any player's body parts (works through walls at any distance)
+            if not targetPlayer then
+                pcall(function()
+                    local screenCenter = Vector2.new(Mouse.X, Mouse.Y)
+                    local closestDist = 50 -- pixel tolerance
+                    
+                    for _, player in pairs(Players:GetPlayers()) do
+                        if player ~= LocalPlayer and player.Character then
+                            local targetChar = player.Character
+                            local hum = targetChar:FindFirstChildOfClass("Humanoid")
+                            if hum and hum.Health > 0 then
+                                -- Check multiple body parts
+                                for _, partName in pairs({"Head", "HumanoidRootPart", "UpperTorso", "Torso"}) do
+                                    local part = targetChar:FindFirstChild(partName)
+                                    if part then
+                                        local screenPos, onScreen = Camera:WorldToScreenPoint(part.Position)
+                                        if onScreen then
+                                            local dist = (Vector2.new(screenPos.X, screenPos.Y) - screenCenter).Magnitude
+                                            if dist < closestDist then
+                                                closestDist = dist
+                                                targetPlayer = player
+                                            end
+                                        end
+                                    end
+                                end
+                            end
+                        end
+                    end
+                end)
+            end
+            
+            -- Validate target
             if not targetPlayer or targetPlayer == LocalPlayer then 
                 isAimingAtEnemy = false
                 continue 
