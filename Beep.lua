@@ -875,14 +875,23 @@ function UI:CreateSelector(parent, text, configSection, configKey, options, call
     
     UI:Create("TextLabel", {Size = UDim2.new(0.5, 0, 1, 0), Position = UDim2.new(0, 14, 0, 0), BackgroundTransparency = 1, Text = text, TextColor3 = Color3.fromRGB(225, 226, 232), Font = Enum.Font.Gotham, TextSize = 13, TextXAlignment = Enum.TextXAlignment.Left, ZIndex = 5, Parent = Frame})
     
+    -- Function to determine if color is light (needs dark text)
+    local function isLightColor(c)
+        return (c.R * 255 + c.G * 255 + c.B * 255) / 3 > 180
+    end
+    
     local SelectorButton = UI:Create("TextButton", {
         Size = UDim2.new(0, 130, 0, 26), Position = UDim2.new(1, -142, 0.5, -13),
         BackgroundColor3 = Config.Visuals.Accent,
         Text = "‹ " .. Config[configSection][configKey] .. " ›",
-        TextColor3 = Color3.new(1,1,1), Font = Enum.Font.GothamBold, TextSize = 11, AutoButtonColor = false, ZIndex = 5, Parent = Frame
+        TextColor3 = isLightColor(Config.Visuals.Accent) and Color3.new(0,0,0) or Color3.new(1,1,1),
+        Font = Enum.Font.GothamBold, TextSize = 11, AutoButtonColor = false, ZIndex = 5, Parent = Frame
     })
     Instance.new("UICorner", SelectorButton).CornerRadius = UDim.new(0, 7)
-    RegisterAccent(function(c) SelectorButton.BackgroundColor3 = c end)
+    RegisterAccent(function(c) 
+        SelectorButton.BackgroundColor3 = c 
+        SelectorButton.TextColor3 = isLightColor(c) and Color3.new(0,0,0) or Color3.new(1,1,1)
+    end)
     
     SelectorButton.MouseButton1Click:Connect(function()
         if not UI.Active then return end
@@ -2415,6 +2424,10 @@ local ThemeContainer = UI:Create("Frame", {
     BackgroundTransparency = 1, ZIndex = 5, Parent = ThemeFrame
 })
 
+local function isLightThemeColor(c)
+    return (c.R * 255 + c.G * 255 + c.B * 255) / 3 > 180
+end
+
 local themeNames = {"White", "Red", "Blue", "Green", "Yellow", "Pink"}
 for i, color in ipairs(Config.UI.ThemeColors) do
     local ThemeBtn = UI:Create("TextButton", {
@@ -2422,7 +2435,7 @@ for i, color in ipairs(Config.UI.ThemeColors) do
         Position = UDim2.new(0, (i-1) * 75, 0, 0),
         BackgroundColor3 = color,
         Text = themeNames[i],
-        TextColor3 = Color3.new(1,1,1),
+        TextColor3 = isLightThemeColor(color) and Color3.new(0,0,0) or Color3.new(1,1,1),
         Font = Enum.Font.GothamBold,
         TextSize = 10,
         ZIndex = 6,
@@ -2457,12 +2470,21 @@ local PlayerDropdown = UI:Create("TextButton", {
 })
 Instance.new("UICorner", PlayerDropdown).CornerRadius = UDim.new(0, 6)
 
+local function isLightColorGlobal(c)
+    return (c.R * 255 + c.G * 255 + c.B * 255) / 3 > 180
+end
+
 local TeleportBtn = UI:Create("TextButton", {
     Size = UDim2.new(0, 100, 0, 25), Position = UDim2.new(1, -110, 1, -30),
     BackgroundColor3 = Config.Visuals.Accent, Text = "TELEPORT",
-    TextColor3 = Color3.new(1,1,1), Font = Enum.Font.GothamBold, TextSize = 11, ZIndex = 5, Parent = TeleportFrame
+    TextColor3 = isLightColorGlobal(Config.Visuals.Accent) and Color3.new(0,0,0) or Color3.new(1,1,1),
+    Font = Enum.Font.GothamBold, TextSize = 11, ZIndex = 5, Parent = TeleportFrame
 })
 Instance.new("UICorner", TeleportBtn).CornerRadius = UDim.new(0, 6)
+RegisterAccent(function(c) 
+    TeleportBtn.BackgroundColor3 = c 
+    TeleportBtn.TextColor3 = isLightColorGlobal(c) and Color3.new(0,0,0) or Color3.new(1,1,1)
+end)
 
 -- Dropdown functionality
 local dropdownOpen = false
