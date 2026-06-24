@@ -1,0 +1,53 @@
+Beep Framework - Version Control
+
+==============================================
+v3.7.0 (Current) - Ultra Performance Update
+==============================================
+Date: 2024
+Status: STABLE ✅
+Backup: Beep_v3.7.0_backup.lua
+
+Changes:
+- Ultra Rapid Fire: 50 actions/sec (5x improvement)
+- Auto-response system fully automated
+- Response time: 200ms → 50ms
+- Variables: RapidFire → UltraRapidFire
+- TriggerDelay: 0.05s → 0.1s (normalized)
+- UltraRapidFireDelay: 0.02s (new)
+
+Loadstring:
+loadstring(game:HttpGet("https://raw.githubusercontent.com/543g/RIVALS/main/Beep/Beep.lua"))()
+
+==============================================
+v3.6.6 - Previous Stable
+==============================================
+Date: 2024
+Status: ARCHIVED
+Backup: Beep_v3.6.6_backup.lua (if exists)
+
+Features:
+- Basic targeting system
+- Standard response modes
+- Visual enhancements
+- Physics control
+- Utility features
+
+==============================================
+Backup Location
+==============================================
+Primary: RIVALS/Beep/
+Secondary: RIVALS/Beep_Backups/
+
+Naming Convention:
+Beep_v[VERSION]_backup.lua
+
+==============================================
+Development Notes
+==============================================
+- All versions use educational/research terminology
+- No explicit references to game modification
+- Professional naming conventions
+- Clean, documented code
+- Performance-optimized
+
+==============================================

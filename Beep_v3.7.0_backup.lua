@@ -2,7 +2,7 @@
 -- Universal ESP, Aimbot & Physics Controller
 
 -- VERSION CONTROL (Update this for each new version)
-local BEEP_VERSION = "v4.0.0"
+local BEEP_VERSION = "v3.7.0"
 
 local StartTime = tick()
 if not game:IsLoaded() then
@@ -42,7 +42,7 @@ local Config = {
         HealthBars = false,
         BoxESP = false,
         HeadDot = false,
-        Accent = Color3.fromRGB(255, 255, 255) -- White
+        Accent = Color3.fromRGB(96, 116, 158)
     },
     Combat = {
         SilentAim = false,
@@ -119,7 +119,7 @@ local Config = {
     },
     UI = {
         ThemeColors = {
-            Color3.fromRGB(255, 255, 255), -- White (default)
+            Color3.fromRGB(96, 116, 158), -- Steel (sober default)
             Color3.fromRGB(255, 80, 80),  -- Red
             Color3.fromRGB(80, 160, 255), -- Blue
             Color3.fromRGB(80, 255, 120), -- Green
@@ -144,11 +144,6 @@ local function RefreshAccent(color)
     end
 end
 
--- Global function to detect if a color is light (needs dark elements)
-local function isLightColorGlobal(c)
-    return (c.R * 255 + c.G * 255 + c.B * 255) / 3 > 180
-end
-
 function UI:Create(class, props)
     local inst = Instance.new(class)
     for k, v in pairs(props) do 
@@ -169,7 +164,7 @@ UI.Screen = UI:Create("ScreenGui", {
 local Main = UI:Create("Frame", {
     Size = UDim2.new(0, 660, 0, 480), 
     Position = UDim2.new(0.5, -330, 0.5, -240),
-    BackgroundColor3 = Color3.fromRGB(10, 10, 14),
+    BackgroundColor3 = Color3.fromRGB(16, 16, 19),
     BorderSizePixel = 0, 
     ClipsDescendants = true,
     ZIndex = 1,
@@ -180,15 +175,15 @@ Instance.new("UICorner", Main).CornerRadius = UDim.new(0, 12)
 -- Subtle gradient on main background
 UI:Create("UIGradient", {
     Color = ColorSequence.new({
-        ColorSequenceKeypoint.new(0, Color3.fromRGB(12, 12, 16)),
-        ColorSequenceKeypoint.new(1, Color3.fromRGB(8, 8, 12))
+        ColorSequenceKeypoint.new(0, Color3.fromRGB(22, 23, 27)),
+        ColorSequenceKeypoint.new(1, Color3.fromRGB(13, 13, 16))
     }),
     Rotation = 90,
     Parent = Main
 })
 
 local MainStroke = UI:Create("UIStroke", {
-    Color = Color3.fromRGB(36, 36, 44),
+    Color = Color3.fromRGB(48, 51, 60),
     Thickness = 1.5, 
     Transparency = 0.2,
     Parent = Main
@@ -197,7 +192,7 @@ local MainStroke = UI:Create("UIStroke", {
 -- ===== TOP BAR (Title + Window Controls) =====
 local TopBar = UI:Create("Frame", {
     Size = UDim2.new(1, 0, 0, 46),
-    BackgroundColor3 = Color3.fromRGB(14, 14, 18),
+    BackgroundColor3 = Color3.fromRGB(20, 21, 25),
     BorderSizePixel = 0,
     ZIndex = 6,
     Parent = Main
@@ -206,12 +201,12 @@ Instance.new("UICorner", TopBar).CornerRadius = UDim.new(0, 12)
 -- cover bottom rounded corners of topbar
 UI:Create("Frame", {
     Size = UDim2.new(1, 0, 0, 14), Position = UDim2.new(0, 0, 1, -14),
-    BackgroundColor3 = Color3.fromRGB(14, 14, 18), BorderSizePixel = 0, ZIndex = 6, Parent = TopBar
+    BackgroundColor3 = Color3.fromRGB(20, 21, 25), BorderSizePixel = 0, ZIndex = 6, Parent = TopBar
 })
 -- bottom border line of topbar
 UI:Create("Frame", {
     Size = UDim2.new(1, 0, 0, 1), Position = UDim2.new(0, 0, 1, -1),
-    BackgroundColor3 = Color3.fromRGB(30, 30, 38), BorderSizePixel = 0, ZIndex = 7, Parent = TopBar
+    BackgroundColor3 = Color3.fromRGB(40, 42, 50), BorderSizePixel = 0, ZIndex = 7, Parent = TopBar
 })
 
 -- Accent dot / logo mark
@@ -242,7 +237,7 @@ local TitleLabel = UI:Create("TextLabel", {
 local VersionBadge = UI:Create("TextLabel", {
     Size = UDim2.new(0, 50, 0, 20),
     Position = UDim2.new(0, 94, 0.5, -10),
-    BackgroundColor3 = Color3.fromRGB(24, 24, 30),
+    BackgroundColor3 = Color3.fromRGB(32, 34, 41),
     Text = BEEP_VERSION,
     TextColor3 = Config.Visuals.Accent,
     Font = Enum.Font.GothamSemibold,
@@ -257,7 +252,7 @@ RegisterAccent(function(c) VersionBadge.TextColor3 = c end)
 local CloseBtn = UI:Create("TextButton", {
     Size = UDim2.new(0, 30, 0, 30),
     Position = UDim2.new(1, -38, 0.5, -15),
-    BackgroundColor3 = Color3.fromRGB(26, 26, 32),
+    BackgroundColor3 = Color3.fromRGB(34, 34, 40),
     Text = "X",
     TextColor3 = Color3.fromRGB(210, 120, 120),
     Font = Enum.Font.GothamBold,
@@ -272,7 +267,7 @@ Instance.new("UICorner", CloseBtn).CornerRadius = UDim.new(0, 8)
 local MinimizeBtn = UI:Create("TextButton", {
     Size = UDim2.new(0, 30, 0, 30),
     Position = UDim2.new(1, -74, 0.5, -15),
-    BackgroundColor3 = Color3.fromRGB(22, 22, 28),
+    BackgroundColor3 = Color3.fromRGB(30, 31, 38),
     Text = "—",
     TextColor3 = Color3.fromRGB(190, 192, 200),
     Font = Enum.Font.GothamBold,
@@ -287,7 +282,7 @@ CloseBtn.MouseEnter:Connect(function()
     TweenService:Create(CloseBtn, TweenInfo.new(0.15), {BackgroundColor3 = Color3.fromRGB(160, 60, 60)}):Play()
 end)
 CloseBtn.MouseLeave:Connect(function()
-    TweenService:Create(CloseBtn, TweenInfo.new(0.15), {BackgroundColor3 = Color3.fromRGB(26, 26, 32)}):Play()
+    TweenService:Create(CloseBtn, TweenInfo.new(0.15), {BackgroundColor3 = Color3.fromRGB(34, 34, 40)}):Play()
 end)
 CloseBtn.MouseButton1Click:Connect(function()
     UI.Visible = false
@@ -299,7 +294,7 @@ MinimizeBtn.MouseEnter:Connect(function()
     TweenService:Create(MinimizeBtn, TweenInfo.new(0.15), {BackgroundColor3 = Color3.fromRGB(46, 48, 58)}):Play()
 end)
 MinimizeBtn.MouseLeave:Connect(function()
-    TweenService:Create(MinimizeBtn, TweenInfo.new(0.15), {BackgroundColor3 = Color3.fromRGB(22, 22, 28)}):Play()
+    TweenService:Create(MinimizeBtn, TweenInfo.new(0.15), {BackgroundColor3 = Color3.fromRGB(30, 31, 38)}):Play()
 end)
 local minimized = false
 MinimizeBtn.MouseButton1Click:Connect(function()
@@ -316,7 +311,7 @@ end)
 local Sidebar = UI:Create("Frame", {
     Size = UDim2.new(0, 168, 1, -46), 
     Position = UDim2.new(0, 0, 0, 46),
-    BackgroundColor3 = Color3.fromRGB(14, 14, 18),
+    BackgroundColor3 = Color3.fromRGB(18, 18, 22),
     BorderSizePixel = 0,
     ZIndex = 2,
     Parent = Main
@@ -325,7 +320,7 @@ local Sidebar = UI:Create("Frame", {
 -- Sidebar separator line
 UI:Create("Frame", {
     Size = UDim2.new(0, 1, 1, -20), Position = UDim2.new(1, 0, 0, 10),
-    BackgroundColor3 = Color3.fromRGB(28, 28, 36), BorderSizePixel = 0, ZIndex = 2, Parent = Sidebar
+    BackgroundColor3 = Color3.fromRGB(38, 40, 48), BorderSizePixel = 0, ZIndex = 2, Parent = Sidebar
 })
 
 -- Pages Container (Adjusted to be below search bar)
@@ -426,12 +421,12 @@ end)
 local SearchBar = UI:Create("Frame", {
     Size = UDim2.new(1, -200, 0, 38),
     Position = UDim2.new(0, 180, 0, 56),
-    BackgroundColor3 = Color3.fromRGB(18, 18, 24),
+    BackgroundColor3 = Color3.fromRGB(26, 27, 32),
     ZIndex = 15,
     Parent = Main
 })
 Instance.new("UICorner", SearchBar).CornerRadius = UDim.new(0, 10)
-UI:Create("UIStroke", {Color = Color3.fromRGB(34, 34, 42), Thickness = 1, Transparency = 0.4, Parent = SearchBar})
+UI:Create("UIStroke", {Color = Color3.fromRGB(46, 48, 56), Thickness = 1, Transparency = 0.4, Parent = SearchBar})
 
 local SearchBox = UI:Create("TextBox", {
     Size = UDim2.new(1, -16, 1, -10),
@@ -650,7 +645,7 @@ function UI:CreateTab(name)
     local TabButton = UI:Create("TextButton", {
         Size = UDim2.new(0, 148, 0, 38),
         Position = UDim2.new(0, 10, 0, 16 + (tabIndex * 46)),
-        BackgroundColor3 = Color3.fromRGB(20, 20, 26),
+        BackgroundColor3 = Color3.fromRGB(28, 29, 35),
         BackgroundTransparency = tabIndex == 0 and 0 or 1,
         Text = "",
         AutoButtonColor = false,
@@ -728,7 +723,7 @@ local ToggleIndicators = {}
 -- Helper to animate a switch visual
 local function SetSwitchVisual(track, knob, state)
     TweenService:Create(track, TweenInfo.new(0.18, Enum.EasingStyle.Quad), {
-        BackgroundColor3 = state and Config.Visuals.Accent or Color3.fromRGB(38, 38, 46)
+        BackgroundColor3 = state and Config.Visuals.Accent or Color3.fromRGB(50, 52, 60)
     }):Play()
     TweenService:Create(knob, TweenInfo.new(0.18, Enum.EasingStyle.Quad), {
         Position = state and UDim2.new(1, -20, 0.5, -8) or UDim2.new(0, 4, 0.5, -8)
@@ -736,9 +731,9 @@ local function SetSwitchVisual(track, knob, state)
 end
 
 function UI:CreateToggle(parent, text, configSection, configKey, callback)
-    local Frame = UI:Create("Frame", {Size = UDim2.new(1, -10, 0, 42), BackgroundColor3 = Color3.fromRGB(18, 18, 24), ZIndex = 4, Parent = parent})
+    local Frame = UI:Create("Frame", {Size = UDim2.new(1, -10, 0, 42), BackgroundColor3 = Color3.fromRGB(26, 27, 32), ZIndex = 4, Parent = parent})
     Instance.new("UICorner", Frame).CornerRadius = UDim.new(0, 8)
-    UI:Create("UIStroke", {Color = Color3.fromRGB(32, 32, 40), Thickness = 1, Transparency = 0.4, Parent = Frame})
+    UI:Create("UIStroke", {Color = Color3.fromRGB(44, 46, 54), Thickness = 1, Transparency = 0.4, Parent = Frame})
     
     UI:Create("TextLabel", {Size = UDim2.new(0.7, 0, 1, 0), Position = UDim2.new(0, 14, 0, 0), BackgroundTransparency = 1, Text = text, TextColor3 = Color3.fromRGB(225, 226, 232), Font = Enum.Font.Gotham, TextSize = 13, TextXAlignment = Enum.TextXAlignment.Left, ZIndex = 5, Parent = Frame})
     
@@ -747,7 +742,7 @@ function UI:CreateToggle(parent, text, configSection, configKey, callback)
     -- Switch track
     local Track = UI:Create("TextButton", {
         Size = UDim2.new(0, 44, 0, 22), Position = UDim2.new(1, -56, 0.5, -11),
-        BackgroundColor3 = state and Config.Visuals.Accent or Color3.fromRGB(38, 38, 46),
+        BackgroundColor3 = state and Config.Visuals.Accent or Color3.fromRGB(50, 52, 60),
         Text = "", AutoButtonColor = false, ZIndex = 5, Parent = Frame
     })
     Instance.new("UICorner", Track).CornerRadius = UDim.new(1, 0)
@@ -756,7 +751,7 @@ function UI:CreateToggle(parent, text, configSection, configKey, callback)
     local Knob = UI:Create("Frame", {
         Size = UDim2.new(0, 16, 0, 16),
         Position = state and UDim2.new(1, -20, 0.5, -8) or UDim2.new(0, 4, 0.5, -8),
-        BackgroundColor3 = isLightColorGlobal(Config.Visuals.Accent) and Color3.new(0, 0, 0) or Color3.new(1, 1, 1),
+        BackgroundColor3 = Color3.new(1, 1, 1),
         ZIndex = 6, Parent = Track
     })
     Instance.new("UICorner", Knob).CornerRadius = UDim.new(1, 0)
@@ -766,7 +761,6 @@ function UI:CreateToggle(parent, text, configSection, configKey, callback)
     ToggleIndicators[key] = {track = Track, knob = Knob}
     RegisterAccent(function(c)
         if Config[configSection][configKey] then Track.BackgroundColor3 = c end
-        Knob.BackgroundColor3 = isLightColorGlobal(c) and Color3.new(0, 0, 0) or Color3.new(1, 1, 1)
     end)
     
     Track.MouseButton1Click:Connect(function()
@@ -788,32 +782,27 @@ function UI:UpdateToggle(configSection, configKey, state)
 end
 
 function UI:CreateSlider(parent, text, min, max, configSection, configKey, callback)
-    local Frame = UI:Create("Frame", {Size = UDim2.new(1, -10, 0, 54), BackgroundColor3 = Color3.fromRGB(18, 18, 24), ZIndex = 4, Parent = parent})
+    local Frame = UI:Create("Frame", {Size = UDim2.new(1, -10, 0, 54), BackgroundColor3 = Color3.fromRGB(26, 27, 32), ZIndex = 4, Parent = parent})
     Instance.new("UICorner", Frame).CornerRadius = UDim.new(0, 8)
-    UI:Create("UIStroke", {Color = Color3.fromRGB(32, 32, 40), Thickness = 1, Transparency = 0.4, Parent = Frame})
+    UI:Create("UIStroke", {Color = Color3.fromRGB(44, 46, 54), Thickness = 1, Transparency = 0.4, Parent = Frame})
     
     local Label = UI:Create("TextLabel", {Size = UDim2.new(0.7, 0, 0, 25), Position = UDim2.new(0, 14, 0, 4), BackgroundTransparency = 1, Text = text, TextColor3 = Color3.fromRGB(225, 226, 232), Font = Enum.Font.Gotham, TextSize = 13, TextXAlignment = Enum.TextXAlignment.Left, ZIndex = 5, Parent = Frame})
     local ValueLabel = UI:Create("TextLabel", {Size = UDim2.new(0, 60, 0, 25), Position = UDim2.new(1, -70, 0, 4), BackgroundTransparency = 1, Text = tostring(Config[configSection][configKey]), TextColor3 = Config.Visuals.Accent, Font = Enum.Font.GothamBold, TextSize = 13, TextXAlignment = Enum.TextXAlignment.Right, ZIndex = 5, Parent = Frame})
     
-    local SlideBar = UI:Create("Frame", {Size = UDim2.new(1, -28, 0, 6), Position = UDim2.new(0, 14, 0, 38), BackgroundColor3 = Color3.fromRGB(34, 34, 42), ZIndex = 5, Parent = Frame})
+    local SlideBar = UI:Create("Frame", {Size = UDim2.new(1, -28, 0, 6), Position = UDim2.new(0, 14, 0, 38), BackgroundColor3 = Color3.fromRGB(46, 48, 56), ZIndex = 5, Parent = Frame})
     Instance.new("UICorner", SlideBar).CornerRadius = UDim.new(0, 3)
     
     local Fill = UI:Create("Frame", {Size = UDim2.new((Config[configSection][configKey] - min)/(max - min), 0, 1, 0), BackgroundColor3 = Config.Visuals.Accent, ZIndex = 6, Parent = SlideBar})
     Instance.new("UICorner", Fill).CornerRadius = UDim.new(0, 3)
+    RegisterAccent(function(c) Fill.BackgroundColor3 = c; ValueLabel.TextColor3 = c end)
 
     -- Knob
     local Knob = UI:Create("Frame", {
         Size = UDim2.new(0, 14, 0, 14), AnchorPoint = Vector2.new(0.5, 0.5),
         Position = UDim2.new(1, 0, 0.5, 0),
-        BackgroundColor3 = isLightColorGlobal(Config.Visuals.Accent) and Color3.new(0, 0, 0) or Color3.new(1, 1, 1), ZIndex = 7, Parent = Fill
+        BackgroundColor3 = Color3.new(1, 1, 1), ZIndex = 7, Parent = Fill
     })
     Instance.new("UICorner", Knob).CornerRadius = UDim.new(1, 0)
-    
-    RegisterAccent(function(c) 
-        Fill.BackgroundColor3 = c
-        ValueLabel.TextColor3 = c 
-        Knob.BackgroundColor3 = isLightColorGlobal(c) and Color3.new(0, 0, 0) or Color3.new(1, 1, 1)
-    end)
     
     local Trigger = UI:Create("TextButton", {Size = UDim2.new(1, 0, 3, 0), Position = UDim2.new(0, 0, -1, 0), BackgroundTransparency = 1, Text = "", ZIndex = 7, Parent = SlideBar})
     
@@ -839,15 +828,15 @@ function UI:CreateSlider(parent, text, min, max, configSection, configKey, callb
 end
 
 function UI:CreateKeybind(parent, text, configSection, configKey)
-    local Frame = UI:Create("Frame", {Size = UDim2.new(1, -10, 0, 42), BackgroundColor3 = Color3.fromRGB(18, 18, 24), ZIndex = 4, Parent = parent})
+    local Frame = UI:Create("Frame", {Size = UDim2.new(1, -10, 0, 42), BackgroundColor3 = Color3.fromRGB(26, 27, 32), ZIndex = 4, Parent = parent})
     Instance.new("UICorner", Frame).CornerRadius = UDim.new(0, 8)
-    UI:Create("UIStroke", {Color = Color3.fromRGB(32, 32, 40), Thickness = 1, Transparency = 0.4, Parent = Frame})
+    UI:Create("UIStroke", {Color = Color3.fromRGB(44, 46, 54), Thickness = 1, Transparency = 0.4, Parent = Frame})
     
     UI:Create("TextLabel", {Size = UDim2.new(0.5, 0, 1, 0), Position = UDim2.new(0, 14, 0, 0), BackgroundTransparency = 1, Text = text, TextColor3 = Color3.fromRGB(225, 226, 232), Font = Enum.Font.Gotham, TextSize = 13, TextXAlignment = Enum.TextXAlignment.Left, ZIndex = 5, Parent = Frame})
     
     local KeyButton = UI:Create("TextButton", {
         Size = UDim2.new(0, 72, 0, 26), Position = UDim2.new(1, -84, 0.5, -13),
-        BackgroundColor3 = Color3.fromRGB(28, 28, 36),
+        BackgroundColor3 = Color3.fromRGB(38, 40, 48),
         Text = Config[configSection][configKey] == "MouseButton2" and "RMB" or Config[configSection][configKey],
         TextColor3 = Config.Visuals.Accent, Font = Enum.Font.GothamBold, TextSize = 11, AutoButtonColor = false, ZIndex = 5, Parent = Frame
     })
@@ -880,29 +869,20 @@ function UI:CreateKeybind(parent, text, configSection, configKey)
 end
 
 function UI:CreateSelector(parent, text, configSection, configKey, options, callback)
-    local Frame = UI:Create("Frame", {Size = UDim2.new(1, -10, 0, 42), BackgroundColor3 = Color3.fromRGB(18, 18, 24), ZIndex = 4, Parent = parent})
+    local Frame = UI:Create("Frame", {Size = UDim2.new(1, -10, 0, 42), BackgroundColor3 = Color3.fromRGB(26, 27, 32), ZIndex = 4, Parent = parent})
     Instance.new("UICorner", Frame).CornerRadius = UDim.new(0, 8)
-    UI:Create("UIStroke", {Color = Color3.fromRGB(32, 32, 40), Thickness = 1, Transparency = 0.4, Parent = Frame})
+    UI:Create("UIStroke", {Color = Color3.fromRGB(44, 46, 54), Thickness = 1, Transparency = 0.4, Parent = Frame})
     
     UI:Create("TextLabel", {Size = UDim2.new(0.5, 0, 1, 0), Position = UDim2.new(0, 14, 0, 0), BackgroundTransparency = 1, Text = text, TextColor3 = Color3.fromRGB(225, 226, 232), Font = Enum.Font.Gotham, TextSize = 13, TextXAlignment = Enum.TextXAlignment.Left, ZIndex = 5, Parent = Frame})
-    
-    -- Function to determine if color is light (needs dark text)
-    local function isLightColor(c)
-        return (c.R * 255 + c.G * 255 + c.B * 255) / 3 > 180
-    end
     
     local SelectorButton = UI:Create("TextButton", {
         Size = UDim2.new(0, 130, 0, 26), Position = UDim2.new(1, -142, 0.5, -13),
         BackgroundColor3 = Config.Visuals.Accent,
         Text = "‹ " .. Config[configSection][configKey] .. " ›",
-        TextColor3 = isLightColor(Config.Visuals.Accent) and Color3.new(0,0,0) or Color3.new(1,1,1),
-        Font = Enum.Font.GothamBold, TextSize = 11, AutoButtonColor = false, ZIndex = 5, Parent = Frame
+        TextColor3 = Color3.new(1,1,1), Font = Enum.Font.GothamBold, TextSize = 11, AutoButtonColor = false, ZIndex = 5, Parent = Frame
     })
     Instance.new("UICorner", SelectorButton).CornerRadius = UDim.new(0, 7)
-    RegisterAccent(function(c) 
-        SelectorButton.BackgroundColor3 = c 
-        SelectorButton.TextColor3 = isLightColor(c) and Color3.new(0,0,0) or Color3.new(1,1,1)
-    end)
+    RegisterAccent(function(c) SelectorButton.BackgroundColor3 = c end)
     
     SelectorButton.MouseButton1Click:Connect(function()
         if not UI.Active then return end
@@ -2331,8 +2311,8 @@ UI:CreateToggle(CombatPage, "Auto Shoot (Locked Target)", "Combat", "AutoShoot")
 UI:CreateSlider(CombatPage, "Auto Shoot Delay (s)", 0, 1, "Combat", "ShootDelay")
 UI:CreateToggle(CombatPage, "Triggerbot", "Combat", "Triggerbot")
 UI:CreateSlider(CombatPage, "Trigger Delay (s)", 0, 1, "Combat", "TriggerDelay")
-UI:CreateToggle(CombatPage, "Ultra Rapid Fire", "Combat", "UltraRapidFire")
-UI:CreateSlider(CombatPage, "Ultra Rapid Fire Delay (s)", 0.01, 0.1, "Combat", "UltraRapidFireDelay")
+UI:CreateToggle(CombatPage, "Rapid Fire", "Combat", "RapidFire")
+UI:CreateSlider(CombatPage, "Rapid Fire Delay (s)", 0.01, 1, "Combat", "RapidFireDelay")
 UI:CreateToggle(CombatPage, "No Recoil", "Combat", "NoRecoil")
 UI:CreateToggle(CombatPage, "No Spread", "Combat", "NoSpread")
 UI:CreateToggle(CombatPage, "Auto Reload", "Combat", "AutoReload")
@@ -2420,7 +2400,7 @@ UI:CreateKeybind(MiscPage, "NoClip Toggle Key", "Misc", "NoClipToggleKey")
 UI:CreateKeybind(MiscPage, "PANIC Key (stop all)", "Misc", "PanicKey")
 
 -- Theme Changer
-local ThemeFrame = UI:Create("Frame", {Size = UDim2.new(1, -10, 0, 70), BackgroundColor3 = Color3.fromRGB(18, 18, 24), ZIndex = 4, Parent = MiscPage})
+local ThemeFrame = UI:Create("Frame", {Size = UDim2.new(1, -10, 0, 70), BackgroundColor3 = Color3.fromRGB(26, 27, 32), ZIndex = 4, Parent = MiscPage})
 Instance.new("UICorner", ThemeFrame).CornerRadius = UDim.new(0, 6)
 
 UI:Create("TextLabel", {
@@ -2435,18 +2415,14 @@ local ThemeContainer = UI:Create("Frame", {
     BackgroundTransparency = 1, ZIndex = 5, Parent = ThemeFrame
 })
 
-local function isLightThemeColor(c)
-    return (c.R * 255 + c.G * 255 + c.B * 255) / 3 > 180
-end
-
-local themeNames = {"White", "Red", "Blue", "Green", "Yellow", "Pink"}
+local themeNames = {"Steel", "Red", "Blue", "Green", "Yellow", "Pink"}
 for i, color in ipairs(Config.UI.ThemeColors) do
     local ThemeBtn = UI:Create("TextButton", {
         Size = UDim2.new(0, 70, 0, 30),
         Position = UDim2.new(0, (i-1) * 75, 0, 0),
         BackgroundColor3 = color,
         Text = themeNames[i],
-        TextColor3 = isLightThemeColor(color) and Color3.new(0,0,0) or Color3.new(1,1,1),
+        TextColor3 = Color3.new(1,1,1),
         Font = Enum.Font.GothamBold,
         TextSize = 10,
         ZIndex = 6,
@@ -2464,7 +2440,7 @@ for i, color in ipairs(Config.UI.ThemeColors) do
 end
 
 -- Teleport to Player Section
-local TeleportFrame = UI:Create("Frame", {Size = UDim2.new(1, -10, 0, 90), BackgroundColor3 = Color3.fromRGB(18, 18, 24), ZIndex = 4, Parent = MiscPage})
+local TeleportFrame = UI:Create("Frame", {Size = UDim2.new(1, -10, 0, 90), BackgroundColor3 = Color3.fromRGB(26, 27, 32), ZIndex = 4, Parent = MiscPage})
 Instance.new("UICorner", TeleportFrame).CornerRadius = UDim.new(0, 6)
 
 UI:Create("TextLabel", {
@@ -2476,26 +2452,17 @@ UI:Create("TextLabel", {
 
 local PlayerDropdown = UI:Create("TextButton", {
     Size = UDim2.new(1, -20, 0, 30), Position = UDim2.new(0, 10, 0, 35),
-    BackgroundColor3 = Color3.fromRGB(28, 28, 36), Text = "Select Player...",
+    BackgroundColor3 = Color3.fromRGB(38, 40, 48), Text = "Select Player...",
     TextColor3 = Color3.new(1,1,1), Font = Enum.Font.Gotham, TextSize = 11, ZIndex = 5, Parent = TeleportFrame
 })
 Instance.new("UICorner", PlayerDropdown).CornerRadius = UDim.new(0, 6)
 
-local function isLightColorGlobal(c)
-    return (c.R * 255 + c.G * 255 + c.B * 255) / 3 > 180
-end
-
 local TeleportBtn = UI:Create("TextButton", {
     Size = UDim2.new(0, 100, 0, 25), Position = UDim2.new(1, -110, 1, -30),
     BackgroundColor3 = Config.Visuals.Accent, Text = "TELEPORT",
-    TextColor3 = isLightColorGlobal(Config.Visuals.Accent) and Color3.new(0,0,0) or Color3.new(1,1,1),
-    Font = Enum.Font.GothamBold, TextSize = 11, ZIndex = 5, Parent = TeleportFrame
+    TextColor3 = Color3.new(1,1,1), Font = Enum.Font.GothamBold, TextSize = 11, ZIndex = 5, Parent = TeleportFrame
 })
 Instance.new("UICorner", TeleportBtn).CornerRadius = UDim.new(0, 6)
-RegisterAccent(function(c) 
-    TeleportBtn.BackgroundColor3 = c 
-    TeleportBtn.TextColor3 = isLightColorGlobal(c) and Color3.new(0,0,0) or Color3.new(1,1,1)
-end)
 
 -- Dropdown functionality
 local dropdownOpen = false
@@ -2511,7 +2478,7 @@ PlayerDropdown.MouseButton1Click:Connect(function()
     dropdownOpen = true
     DropdownList = UI:Create("ScrollingFrame", {
         Size = UDim2.new(1, -20, 0, 150), Position = UDim2.new(0, 10, 0, 70),
-        BackgroundColor3 = Color3.fromRGB(22, 22, 28), ScrollBarThickness = 4,
+        BackgroundColor3 = Color3.fromRGB(30, 31, 38), ScrollBarThickness = 4,
         CanvasSize = UDim2.new(0, 0, 0, 0), ZIndex = 10, Parent = TeleportFrame
     })
     Instance.new("UICorner", DropdownList).CornerRadius = UDim.new(0, 6)
@@ -2524,7 +2491,7 @@ PlayerDropdown.MouseButton1Click:Connect(function()
     for _, player in pairs(Players:GetPlayers()) do
         if player ~= LocalPlayer then
             local btn = UI:Create("TextButton", {
-                Size = UDim2.new(1, -5, 0, 25), BackgroundColor3 = Color3.fromRGB(28, 28, 36),
+                Size = UDim2.new(1, -5, 0, 25), BackgroundColor3 = Color3.fromRGB(38, 40, 48),
                 Text = player.DisplayName, TextColor3 = Color3.new(1,1,1),
                 Font = Enum.Font.Gotham, TextSize = 10, ZIndex = 11, Parent = DropdownList
             })
@@ -2558,7 +2525,7 @@ TeleportBtn.MouseButton1Click:Connect(function()
 end)
 
 -- Exit Cheat Button
-local ExitFrame = UI:Create("Frame", {Size = UDim2.new(1, -10, 0, 60), BackgroundColor3 = Color3.fromRGB(18, 18, 24), ZIndex = 4, Parent = MiscPage})
+local ExitFrame = UI:Create("Frame", {Size = UDim2.new(1, -10, 0, 60), BackgroundColor3 = Color3.fromRGB(26, 27, 32), ZIndex = 4, Parent = MiscPage})
 Instance.new("UICorner", ExitFrame).CornerRadius = UDim.new(0, 6)
 UI:Create("UIStroke", {Color = Color3.fromRGB(231, 76, 60), Thickness = 2, Parent = ExitFrame})
 
