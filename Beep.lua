@@ -2509,14 +2509,20 @@ PlayerDropdown.MouseButton1Click:Connect(function()
     end
     
     dropdownOpen = true
+    
+    -- Get absolute position of PlayerDropdown to position the list correctly
+    local dropdownAbsPos = PlayerDropdown.AbsolutePosition
+    local dropdownAbsSize = PlayerDropdown.AbsoluteSize
+    
     DropdownList = UI:Create("ScrollingFrame", {
-        Size = UDim2.new(1, -20, 0, 150), Position = UDim2.new(0, 10, 0, 70),
+        Size = UDim2.new(0, dropdownAbsSize.X, 0, 150), 
+        Position = UDim2.new(0, dropdownAbsPos.X, 0, dropdownAbsPos.Y + dropdownAbsSize.Y + 5),
         BackgroundColor3 = Color3.fromRGB(15, 15, 20), ScrollBarThickness = 4,
         ScrollBarImageColor3 = Config.Visuals.Accent,
-        CanvasSize = UDim2.new(0, 0, 0, 0), ZIndex = 10, Parent = TeleportFrame
+        CanvasSize = UDim2.new(0, 0, 0, 0), ZIndex = 100, Parent = UI.Screen
     })
     Instance.new("UICorner", DropdownList).CornerRadius = UDim.new(0, 6)
-    UI:Create("UIStroke", {Color = Color3.fromRGB(40, 40, 50), Thickness = 1, Parent = DropdownList})
+    UI:Create("UIStroke", {Color = Config.Visuals.Accent, Thickness = 1, Transparency = 0.5, Parent = DropdownList})
     
     local Layout = UI:Create("UIListLayout", {Padding = UDim.new(0, 2), Parent = DropdownList})
     UI:Create("UIPadding", {PaddingTop = UDim.new(0, 4), PaddingBottom = UDim.new(0, 4), PaddingLeft = UDim.new(0, 4), PaddingRight = UDim.new(0, 4), Parent = DropdownList})
@@ -2529,7 +2535,7 @@ PlayerDropdown.MouseButton1Click:Connect(function()
             local btn = UI:Create("TextButton", {
                 Size = UDim2.new(1, -8, 0, 28), BackgroundColor3 = Color3.fromRGB(25, 25, 32),
                 Text = player.DisplayName, TextColor3 = Color3.new(1,1,1),
-                Font = Enum.Font.GothamMedium, TextSize = 12, ZIndex = 11, Parent = DropdownList
+                Font = Enum.Font.GothamMedium, TextSize = 12, ZIndex = 101, Parent = DropdownList
             })
             Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 5)
             
