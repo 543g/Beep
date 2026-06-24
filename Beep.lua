@@ -1902,8 +1902,9 @@ function Visuals:DrawESPOnCharacter(player)
         
         table.insert(ESPObjects, bGui)
         
-        -- Head Dot (FIXED - Works for ALL players)
+        -- Head Dot (Only for ENEMIES)
         local headDot = nil
+        local headDotFrame = nil
         task.spawn(function()
             local headPart = char:WaitForChild("Head", 10)
             if headPart then
@@ -1914,13 +1915,13 @@ function Visuals:DrawESPOnCharacter(player)
                     Enabled = false,
                     Parent = headPart
                 })
-                local dot = UI:Create("Frame", {
+                headDotFrame = UI:Create("Frame", {
                     Size = UDim2.new(1, 0, 1, 0), 
-                    BackgroundColor3 = Color3.fromRGB(255, 0, 0), 
+                    BackgroundColor3 = Config.Visuals.ESPColor, 
                     BorderSizePixel = 0, 
                     Parent = headDot
                 })
-                Instance.new("UICorner", dot).CornerRadius = UDim.new(1, 0)
+                Instance.new("UICorner", headDotFrame).CornerRadius = UDim.new(1, 0)
                 table.insert(ESPObjects, headDot)
             end
         end)
@@ -1942,14 +1943,19 @@ function Visuals:DrawESPOnCharacter(player)
                 -- Control BillboardGui visibility
                 bGui.Enabled = visualsEnabled
                 
-                -- Update Head Dot visibility (for ALL players)
+                -- Update Head Dot visibility (ONLY for enemies)
                 if headDot then
-                    headDot.Enabled = visualsEnabled and Config.Visuals.HeadDot
+                    local isEnemyForDot = IsEnemy(player, true)
+                    headDot.Enabled = visualsEnabled and Config.Visuals.HeadDot and isEnemyForDot
+                    -- Update head dot color to match ESP color
+                    if headDotFrame then
+                        headDotFrame.BackgroundColor3 = Config.Visuals.ESPColor
+                    end
                 end
                 
                 -- Check if player is enemy for color coding
                 local isEnemy = IsEnemy(player, true) -- Always check teams
-                local espColor = isEnemy and Color3.fromRGB(255, 80, 80) or Color3.fromRGB(80, 255, 120) -- Red for enemies, Green for teammates
+                local espColor = isEnemy and Config.Visuals.ESPColor or Color3.fromRGB(80, 255, 120) -- Custom color for enemies, Green for teammates
                 
                 -- Update 3D Chams color based on team
                 for _, box in pairs(trackingParts) do
@@ -2023,7 +2029,7 @@ local function CreateTracer(player)
             if Config.Visuals.Tracers then
                 -- Update color based on team
                 local isEnemy = IsEnemy(player, true)
-                local espColor = isEnemy and Color3.fromRGB(255, 80, 80) or Color3.fromRGB(80, 255, 120)
+                local espColor = isEnemy and Config.Visuals.ESPColor or Color3.fromRGB(80, 255, 120)
                 line.Color = Color3.new(espColor.R, espColor.G, espColor.B)
                 
                 local screenPos, onScreen = Camera:WorldToViewportPoint(rootPart.Position)
@@ -2165,7 +2171,7 @@ local function CreateSkeleton(player)
             if Config.Visuals.SkeletonESP then
                 -- Check if it's enemy for color
                 local isEnemy = IsEnemy(player, true)
-                local skeletonColor = isEnemy and Color3.fromRGB(255, 80, 80) or Color3.fromRGB(80, 255, 120)
+                local skeletonColor = isEnemy and Config.Visuals.ESPColor or Color3.fromRGB(80, 255, 120)
                 
                 for _, lineData in pairs(lines) do
                     local fromPart = char:FindFirstChild(lineData.from)
@@ -2231,7 +2237,7 @@ local function CreateBox2D(player)
             if Config.Visuals.BoxESP then
                 -- Check if player is enemy for color coding
                 local isEnemy = IsEnemy(player, true) -- Always check teams
-                local boxColor = isEnemy and Color3.new(1, 0.3, 0.3) or Color3.new(0.3, 1, 0.5) -- Red for enemies, Green for teammates
+                local boxColor = isEnemy and Config.Visuals.ESPColor or Color3.fromRGB(80, 255, 120) -- Custom color for enemies, Green for teammates
                 box.Color = boxColor
                 
                 local hrp = char:FindFirstChild("HumanoidRootPart")
