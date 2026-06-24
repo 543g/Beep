@@ -2350,18 +2350,22 @@ UI:CreateSelector(CombatPage, "Ragebot Body Part", "Combat", "RagebotTargetPart"
 UI:CreateToggle(CombatPage, "Ragebot Full Map", "Combat", "RagebotFullMap")
 
 -- Info Label: For Ragebot Auto Shoot, enable Triggerbot
-local InfoFrame = UI:Create("Frame", {Size = UDim2.new(1, -10, 0, 50), BackgroundColor3 = Color3.fromRGB(35, 90, 140), ZIndex = 4, Parent = CombatPage})
+local InfoFrame = UI:Create("Frame", {Size = UDim2.new(1, -10, 0, 50), BackgroundColor3 = Color3.fromRGB(25, 25, 32), ZIndex = 4, Parent = CombatPage})
 Instance.new("UICorner", InfoFrame).CornerRadius = UDim.new(0, 8)
-UI:Create("UIStroke", {Color = Color3.fromRGB(60, 140, 200), Thickness = 1.5, Transparency = 0.3, Parent = InfoFrame})
-UI:Create("TextLabel", {
+local InfoStroke = UI:Create("UIStroke", {Color = Config.Visuals.Accent, Thickness = 1.5, Transparency = 0.3, Parent = InfoFrame})
+local InfoLabel = UI:Create("TextLabel", {
     Size = UDim2.new(1, -20, 1, 0), Position = UDim2.new(0, 10, 0, 0),
     BackgroundTransparency = 1, 
     Text = "Tip: For Ragebot Auto-Shoot, enable Triggerbot",
-    TextColor3 = Color3.fromRGB(200, 230, 255), 
+    TextColor3 = Config.Visuals.Accent, 
     Font = Enum.Font.GothamBold, TextSize = 12,
     TextXAlignment = Enum.TextXAlignment.Center, TextWrapped = true,
     ZIndex = 5, Parent = InfoFrame
 })
+RegisterAccent(function(c)
+    InfoStroke.Color = c
+    InfoLabel.TextColor3 = c
+end)
 
 UI:CreateToggle(CombatPage, "Ragebot Team Check", "Combat", "RagebotTeamCheck")
 UI:CreateToggle(CombatPage, "Ragebot Visible Check (no walls)", "Combat", "RagebotVisibleCheck")
