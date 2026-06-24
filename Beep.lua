@@ -54,8 +54,6 @@ local Config = {
         LockedTarget = nil,
         Triggerbot = false,
         TriggerDelay = 0.1,        -- Normal: 10 shots/sec
-        AutoShoot = false,
-        ShootDelay = 0.15,
         TeamCheck = true,
         HoldToAim = false,
         AimHoldKey = "MouseButton2",
@@ -1455,7 +1453,6 @@ UserInputService.InputBegan:Connect(function(input)
         Config.Combat.KillAura = false
         Config.Combat.SilentAim = false
         Config.Combat.Triggerbot = false
-        Config.Combat.AutoShoot = false
         Config.Physics.SpeedActive = false
         Config.Physics.FlyActive = false
         Config.Physics.NoClipActive = false
@@ -1467,7 +1464,6 @@ UserInputService.InputBegan:Connect(function(input)
             UI:UpdateToggle("Combat", "KillAura", false)
             UI:UpdateToggle("Combat", "SilentAim", false)
             UI:UpdateToggle("Combat", "Triggerbot", false)
-            UI:UpdateToggle("Combat", "AutoShoot", false)
         end)
         UI:Notify("PANIC: all combat & movement disabled")
     end
@@ -1536,36 +1532,6 @@ RunService.Heartbeat:Connect(function()
                         end
                     end
                 end)
-            end
-        end
-    end
-end)
-
--- Auto Shoot for Locked Target (Separate optimized loop)
-task.spawn(function()
-    while task.wait(0.05) do -- Check every 50ms (20 fps)
-        if UI.Active and Config.Combat.AutoShoot then
-            local currentTime = tick()
-            if currentTime - lastAimShootTime >= Config.Combat.ShootDelay then
-                local targetToShoot = nil
-                
-                -- Priority 1: Use locked target if available
-                if Config.Combat.LockedTarget then
-                    if Combat:IsTargetValid(Config.Combat.LockedTarget) and IsEnemy(Config.Combat.LockedTarget, Config.Combat.TeamCheck) then
-                        targetToShoot = Config.Combat.LockedTarget
-                    end
-                -- Priority 2: If Aim Assist is on, use closest player in FOV
-                elseif Config.Combat.SilentAim then
-                    local closestTarget = Combat:GetClosestPlayer()
-                    if closestTarget then
-                        targetToShoot = closestTarget
-                    end
-                end
-                
-                if targetToShoot then
-                    Shoot()
-                    lastAimShootTime = currentTime
-                end
             end
         end
     end
@@ -2341,8 +2307,6 @@ UI:CreateSlider(CombatPage, "FOV Radius", 50, 400, "Combat", "FOV")
 UI:CreateSlider(CombatPage, "Smoothness", 1, 10, "Combat", "Smoothness")
 UI:CreateToggle(CombatPage, "Show FOV Circle", "Combat", "ShowFOV")
 UI:CreateKeybind(CombatPage, "Lock/Unlock Target", "Combat", "LockKey")
-UI:CreateToggle(CombatPage, "Auto Shoot (Locked Target)", "Combat", "AutoShoot")
-UI:CreateSlider(CombatPage, "Auto Shoot Delay (s)", 0, 1, "Combat", "ShootDelay")
 UI:CreateToggle(CombatPage, "Triggerbot", "Combat", "Triggerbot")
 UI:CreateSlider(CombatPage, "Trigger Delay (s)", 0, 1, "Combat", "TriggerDelay")
 UI:CreateToggle(CombatPage, "Ultra Rapid Fire", "Combat", "UltraRapidFire")
