@@ -1980,8 +1980,8 @@ function Visuals:DrawESPOnCharacter(player)
                         text = text .. "\n[" .. player.UserId .. "]"
                     end
                     
-                    -- Color text based on team
-                    label.TextColor3 = espColor
+                    -- Names and IDs always white
+                    label.TextColor3 = Color3.new(1, 1, 1)
                     
                     if Config.Visuals.Names then 
                         label.Text = text 
