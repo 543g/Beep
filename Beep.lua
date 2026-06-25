@@ -2,7 +2,7 @@
 -- Universal ESP, Aimbot & Physics Controller
 
 -- VERSION CONTROL (Update this for each new version)
-local BEEP_VERSION = "v4.1.1"
+local BEEP_VERSION = "v4.1.2"
 
 local StartTime = tick()
 if not game:IsLoaded() then
@@ -1176,13 +1176,17 @@ function Combat:GetClosestPlayer()
     local shortestDistance = Config.Combat.FOV
     for _, player in pairs(Players:GetPlayers()) do
         if player ~= LocalPlayer and player.Character then
-            -- Try to find the selected target part, with fallbacks
-            local part = player.Character:FindFirstChild(Config.Combat.TargetPart) 
-                or player.Character:FindFirstChild("Head")
-                or player.Character:FindFirstChild("UpperTorso")
-                or player.Character:FindFirstChild("Torso")
-                or player.Character:FindFirstChild("HumanoidRootPart")
-                or player.Character:FindFirstChildOfClass("MeshPart")
+            -- Try to find the selected target part ONLY
+            local part = player.Character:FindFirstChild(Config.Combat.TargetPart)
+            
+            -- Only use fallback if the configured part doesn't exist
+            if not part then
+                part = player.Character:FindFirstChild("Head")
+                    or player.Character:FindFirstChild("UpperTorso")
+                    or player.Character:FindFirstChild("Torso")
+                    or player.Character:FindFirstChild("HumanoidRootPart")
+                    or player.Character:FindFirstChildOfClass("MeshPart")
+            end
             
             -- Skip players in the void (Y < -40)
             if part and part.Position.Y >= -40 then
@@ -1207,13 +1211,17 @@ function Combat:IsTargetValid(target)
     local hum = target.Character:FindFirstChildOfClass("Humanoid")
     if not hum or hum.Health <= 0 then return false end
     
-    -- Try to find the selected target part, with fallbacks
-    local part = target.Character:FindFirstChild(Config.Combat.TargetPart) 
-        or target.Character:FindFirstChild("Head")
-        or target.Character:FindFirstChild("UpperTorso")
-        or target.Character:FindFirstChild("Torso")
-        or target.Character:FindFirstChild("HumanoidRootPart")
-        or target.Character:FindFirstChildOfClass("MeshPart")
+    -- Try to find the selected target part ONLY
+    local part = target.Character:FindFirstChild(Config.Combat.TargetPart)
+    
+    -- Only use fallback if the configured part doesn't exist
+    if not part then
+        part = target.Character:FindFirstChild("Head")
+            or target.Character:FindFirstChild("UpperTorso")
+            or target.Character:FindFirstChild("Torso")
+            or target.Character:FindFirstChild("HumanoidRootPart")
+            or target.Character:FindFirstChildOfClass("MeshPart")
+    end
     
     if not part then return false end
     
@@ -1455,13 +1463,36 @@ RunService.RenderStepped:Connect(function()
         if target and target.Character then
             -- Verify it's an enemy
             if IsEnemy(target, Config.Combat.TeamCheck) then
-                -- Try to find the selected target part, with fallbacks
-                local targetPart = target.Character:FindFirstChild(Config.Combat.TargetPart)
-                    or target.Character:FindFirstChild("Head")
-                    or target.Character:FindFirstChild("UpperTorso")
-                    or target.Character:FindFirstChild("Torso")
-                    or target.Character:FindFirstChild("HumanoidRootPart")
-                    or target.Character:FindFirstChildOfClass("MeshPart")
+                -- Try to find the selected target part FIRST, no fallbacks unless not found
+                local targetPart = nil
+                local selectedPart = Config.Combat.TargetPart
+                
+                -- Try exact match first
+                targetPart = target.Character:FindFirstChild(selectedPart)
+                
+                -- If not found, try fallbacks (for games with different part names)
+                if not targetPart then
+                    if selectedPart == "Head" then
+                        targetPart = target.Character:FindFirstChild("Head")
+                    elseif selectedPart == "UpperTorso" then
+                        targetPart = target.Character:FindFirstChild("UpperTorso") 
+                            or target.Character:FindFirstChild("Torso")
+                    elseif selectedPart == "Torso" then
+                        targetPart = target.Character:FindFirstChild("Torso")
+                            or target.Character:FindFirstChild("UpperTorso")
+                    elseif selectedPart == "HumanoidRootPart" then
+                        targetPart = target.Character:FindFirstChild("HumanoidRootPart")
+                    end
+                end
+                
+                -- Final fallback if still nothing found
+                if not targetPart then
+                    targetPart = target.Character:FindFirstChild("Head")
+                        or target.Character:FindFirstChild("UpperTorso")
+                        or target.Character:FindFirstChild("Torso")
+                        or target.Character:FindFirstChild("HumanoidRootPart")
+                        or target.Character:FindFirstChildOfClass("MeshPart")
+                end
                 
                 if targetPart then
                     local targetCFrame = CFrame.new(Camera.CFrame.Position, targetPart.Position)
@@ -1526,12 +1557,19 @@ local function ragebotSettings()
 end
 
 local function getRagebotPart(char, partName)
-    return char:FindFirstChild(partName or Config.Combat.RagebotTargetPart)
-        or char:FindFirstChild("Head")
-        or char:FindFirstChild("HumanoidRootPart")
-        or char:FindFirstChild("UpperTorso")
-        or char:FindFirstChild("Torso")
-        or char:FindFirstChildWhichIsA("BasePart")
+    -- Try to find the specified part ONLY
+    local part = char:FindFirstChild(partName or Config.Combat.RagebotTargetPart)
+    
+    -- Only use fallback if the configured part doesn't exist
+    if not part then
+        part = char:FindFirstChild("Head")
+            or char:FindFirstChild("HumanoidRootPart")
+            or char:FindFirstChild("UpperTorso")
+            or char:FindFirstChild("Torso")
+            or char:FindFirstChildWhichIsA("BasePart")
+    end
+    
+    return part
 end
 
 local function ragebotVisible(part, character)
@@ -2485,9 +2523,15 @@ task.spawn(function()
         
         -- Auto aim and attack closest enemy
         if closestEnemy and closestEnemy.Character then
+            -- Try to find the selected target part ONLY
             local targetPart = closestEnemy.Character:FindFirstChild(Config.Combat.TargetPart)
-                or closestEnemy.Character:FindFirstChild("Head")
-                or closestEnemy.Character:FindFirstChild("HumanoidRootPart")
+            
+            -- Only use fallback if the configured part doesn't exist
+            if not targetPart then
+                targetPart = closestEnemy.Character:FindFirstChild("Head")
+                    or closestEnemy.Character:FindFirstChild("HumanoidRootPart")
+            end
+            
             if targetPart then
                 -- Auto aim to target
                 local targetCFrame = CFrame.new(Camera.CFrame.Position, targetPart.Position)
