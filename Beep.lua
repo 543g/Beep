@@ -2,7 +2,7 @@
 -- Universal ESP, Aimbot & Physics Controller
 
 -- VERSION CONTROL (Update this for each new version)
-local BEEP_VERSION = "v4.1.2"
+local BEEP_VERSION = "v4.2.0"
 
 local StartTime = tick()
 if not game:IsLoaded() then
@@ -85,8 +85,7 @@ local Config = {
         RagebotNoClip = false,
         RagebotGameProfile = "Auto",
         RagebotFaceTarget = false,
-        RagebotIgnoreImmune = false,
-        RagebotGodMode = false  -- God Mode when Ragebot is active
+        RagebotIgnoreImmune = false
     },
     Physics = {
         Speed = 1,
@@ -115,7 +114,9 @@ local Config = {
         Watermark = true,
         ThemeColor = 1,
         NoClipToggleKey = "F2",
-        PanicKey = "End"
+        PanicKey = "End",
+        GodMode = false,  -- God Mode (works only in certain games)
+        AntiHit = false   -- Anti-Hit (dodge bullets automatically)
     },
     UI = {
         ThemeColors = {
@@ -1730,9 +1731,10 @@ RunService.Stepped:Connect(function()
     end
 end)
 
--- ===== RAGEBOT GOD MODE =====
--- God Mode for Ragebot (only works in certain games with client-sided health)
--- Compatible Games: Da Hood, Hood Modded, 1v1 Combat Arena, some FPS games
+-- ===== GOD MODE & ANTI-HIT SYSTEM =====
+-- God Mode: Works only in games with client-sided health
+-- Anti-Hit: Dodges bullets/attacks automatically (works in most games)
+
 local GodModeCompatibleGames = {
     [2788229376] = "Da Hood",
     [7213786345] = "Hood Modded", 
@@ -1740,76 +1742,112 @@ local GodModeCompatibleGames = {
     [4282985734] = "1v1 Combat Arena",
     [292439477] = "Phantom Forces",
     [113491250] = "Typical Colors 2",
-    [286090429] = "Arsenal", -- Arsenal (special method)
-    -- Add more PlaceIds here for games where God Mode works
+    -- Arsenal removed - server-sided health
 }
 
-local isGodModeCompatible = GodModeCompatibleGames[game.PlaceId] ~= nil
+local currentGameName = GodModeCompatibleGames[game.PlaceId]
+local isGodModeCompatible = currentGameName ~= nil
 local godModeActive = false
-local isArsenal = game.PlaceId == 286090429
+local antiHitActive = false
 
-if isGodModeCompatible then
-    RunService.Heartbeat:Connect(function()
-        local char = LocalPlayer.Character
-        if not char then return end
-        local hum = char:FindFirstChildOfClass("Humanoid")
-        if not hum then return end
-        
-        local wantGodMode = UI.Active and Config.Combat.Ragebot and Config.Combat.RagebotGodMode
-        
-        if wantGodMode and not godModeActive then
-            -- Activate God Mode
-            godModeActive = true
-            UI:Notify("God Mode: ON (" .. GodModeCompatibleGames[game.PlaceId] .. " compatible)")
-            
-            if isArsenal then
-                -- Arsenal-specific god mode (prevents death)
-                hum.HealthChanged:Connect(function()
-                    if godModeActive and Config.Combat.RagebotGodMode then
-                        if hum.Health < hum.MaxHealth * 0.5 then
-                            hum.Health = hum.MaxHealth
-                        end
+-- Show compatibility message when God Mode is toggled
+local godModeConnection = nil
+godModeConnection = RunService.Heartbeat:Connect(function()
+    if not UI.Active then return end
+    
+    -- God Mode Logic
+    if Config.Misc.GodMode then
+        if isGodModeCompatible then
+            local char = LocalPlayer.Character
+            if char then
+                local hum = char:FindFirstChildOfClass("Humanoid")
+                if hum then
+                    if not godModeActive then
+                        godModeActive = true
+                        UI:Notify("God Mode: ON (" .. currentGameName .. " compatible)")
                     end
-                end)
-            else
-                -- Standard method for other games
-                hum.HealthChanged:Connect(function()
-                    if godModeActive and Config.Combat.RagebotGodMode then
+                    -- Keep health at max
+                    if hum.Health < hum.MaxHealth then
                         hum.Health = hum.MaxHealth
                     end
-                end)
+                end
             end
-            
-        elseif not wantGodMode and godModeActive then
-            -- Deactivate God Mode
+        else
+            if not godModeActive then
+                godModeActive = true
+                local gameName = game:GetService("MarketplaceService"):GetProductInfo(game.PlaceId).Name
+                UI:Notify("God Mode: Not compatible with " .. gameName .. " (server-sided)")
+            end
+        end
+    else
+        if godModeActive then
             godModeActive = false
             UI:Notify("God Mode: OFF")
         end
-        
-        -- Keep health at max while active
-        if godModeActive and Config.Combat.RagebotGodMode then
-            if isArsenal then
-                -- Arsenal: heal when health drops below 50%
-                if hum.Health < hum.MaxHealth * 0.5 then
-                    hum.Health = hum.MaxHealth
-                end
-            else
-                -- Other games: always keep at max
-                if hum.Health < hum.MaxHealth then
-                    hum.Health = hum.MaxHealth
-                end
-            end
+    end
+end)
+
+-- Anti-Hit System (works in most games)
+-- Detects incoming damage and dodges/teleports slightly
+local lastHealth = nil
+local antiHitCooldown = 0
+
+RunService.Heartbeat:Connect(function(dt)
+    if not UI.Active or not Config.Misc.AntiHit then 
+        antiHitActive = false
+        return 
+    end
+    
+    if not antiHitActive then
+        antiHitActive = true
+        UI:Notify("Anti-Hit: ON (auto dodge enabled)")
+    end
+    
+    local char = LocalPlayer.Character
+    if not char then return end
+    
+    local hum = char:FindFirstChildOfClass("Humanoid")
+    local root = char:FindFirstChild("HumanoidRootPart")
+    if not hum or not root then return end
+    
+    -- Initialize last health
+    if not lastHealth then
+        lastHealth = hum.Health
+        return
+    end
+    
+    -- Reduce cooldown
+    if antiHitCooldown > 0 then
+        antiHitCooldown = antiHitCooldown - dt
+    end
+    
+    -- Detect damage (health dropped)
+    if hum.Health < lastHealth and antiHitCooldown <= 0 then
+        -- Dodge: teleport slightly to the side
+        local dodgeDirection = Vector3.new(
+            math.random(-5, 5),
+            2,
+            math.random(-5, 5)
+        )
+        pcall(function()
+            root.CFrame = root.CFrame + dodgeDirection
+            root.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
+        end)
+        antiHitCooldown = 0.5 -- Cooldown to prevent spam
+    end
+    
+    lastHealth = hum.Health
+end)
+
+-- Cleanup when Anti-Hit is disabled
+task.spawn(function()
+    while task.wait(1) do
+        if not Config.Misc.AntiHit and antiHitActive then
+            antiHitActive = false
+            UI:Notify("Anti-Hit: OFF")
         end
-    end)
-else
-    -- Show warning that God Mode won't work in this game
-    task.spawn(function()
-        task.wait(3)
-        if Config.Combat.RagebotGodMode then
-            UI:Notify("God Mode: Not compatible with this game")
-        end
-    end)
-end
+    end
+end)
 
 -- ===== PANIC KEY =====
 -- Instantly disables all aggressive/movement features.
@@ -2754,7 +2792,6 @@ UI:CreateSlider(CombatPage, "Ragebot Keep Distance", 2, 30, "Combat", "RagebotTP
 UI:CreateToggle(CombatPage, "Ragebot NoClip (pass walls)", "Combat", "RagebotNoClip")
 UI:CreateToggle(CombatPage, "Ragebot Face Target (body aim)", "Combat", "RagebotFaceTarget")
 UI:CreateToggle(CombatPage, "Ragebot Ignore Immune (ForceField)", "Combat", "RagebotIgnoreImmune")
-UI:CreateToggle(CombatPage, "Ragebot God Mode (certain games only)", "Combat", "RagebotGodMode")
 
 -- Visual Controls
 UI:CreateToggle(VisualsPage, "Enable ESP", "Visuals", "Enabled")
@@ -2798,6 +2835,10 @@ UI:CreateToggle(MiscPage, "FOV Changer", "Misc", "FOVChanger")
 UI:CreateSlider(MiscPage, "FOV Value", 70, 120, "Misc", "FOVValue")
 UI:CreateKeybind(MiscPage, "NoClip Toggle Key", "Misc", "NoClipToggleKey")
 UI:CreateKeybind(MiscPage, "PANIC Key (stop all)", "Misc", "PanicKey")
+
+-- God Mode & Anti-Hit (with auto-detection)
+UI:CreateToggle(MiscPage, "God Mode (auto-detects compatibility)", "Misc", "GodMode")
+UI:CreateToggle(MiscPage, "Anti-Hit (dodge bullets automatically)", "Misc", "AntiHit")
 
 -- Theme Color Picker (same style as ESP color)
 UI:CreateColorPicker(MiscPage, "Theme Color", "Visuals", "Accent")
