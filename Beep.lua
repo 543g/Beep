@@ -2,7 +2,7 @@
 -- Universal ESP, Aimbot & Physics Controller
 
 -- VERSION CONTROL (Update this for each new version)
-local BEEP_VERSION = "v4.2.0"
+local BEEP_VERSION = "v4.2.1"
 
 local StartTime = tick()
 if not game:IsLoaded() then
@@ -1524,11 +1524,12 @@ local Ragebot = {}
 -- Per-game profiles. These tune the strategy; the universal core (camera snap)
 -- works on any game whose guns raycast from the camera.
 -- Note: For auto-shoot, enable Triggerbot (works with Ragebot)
+-- NOTE: 'part' is now always taken from Config.Combat.RagebotTargetPart (user choice)
 local GameProfiles = {
-    ["Universal"] = {part = "Head", visible = false, prediction = 0,  fireMethod = "auto", faceTarget = true},
-    ["Rivals"]    = {part = "Head", visible = false, prediction = 0,  fireMethod = "hold", faceTarget = true},
-    ["Arsenal"]   = {part = "Head", visible = false, prediction = 0,  fireMethod = "hold", faceTarget = false},
-    ["Jailbreak"] = {part = "Head", visible = true,  prediction = 2,  fireMethod = "tool", faceTarget = true},
+    ["Universal"] = {visible = false, prediction = 0,  fireMethod = "auto", faceTarget = true},
+    ["Rivals"]    = {visible = false, prediction = 0,  fireMethod = "hold", faceTarget = true},
+    ["Arsenal"]   = {visible = false, prediction = 0,  fireMethod = "hold", faceTarget = false},
+    ["Jailbreak"] = {visible = true,  prediction = 2,  fireMethod = "tool", faceTarget = true},
 }
 
 -- Detect the game once (by name) for the "Auto" profile
@@ -1554,7 +1555,10 @@ local function ragebotSettings()
         }
     end
     if prof == "Auto" then prof = detectedProfile end
-    return GameProfiles[prof] or GameProfiles["Universal"]
+    local profile = GameProfiles[prof] or GameProfiles["Universal"]
+    -- Always use user's selected target part
+    profile.part = Config.Combat.RagebotTargetPart
+    return profile
 end
 
 local function getRagebotPart(char, partName)
