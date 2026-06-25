@@ -166,6 +166,101 @@ UI.Screen = UI:Create("ScreenGui", {
     Parent = CoreGui
 })
 
+-- ===== PREMIUM LOADING SCREEN =====
+local LoadingScreen = UI:Create("Frame", {
+    Size = UDim2.new(1, 0, 1, 0),
+    BackgroundColor3 = Color3.fromRGB(8, 8, 12),
+    BorderSizePixel = 0,
+    ZIndex = 1000,
+    Parent = UI.Screen
+})
+
+local LoadingLogo = UI:Create("TextLabel", {
+    Size = UDim2.new(0, 200, 0, 60),
+    Position = UDim2.new(0.5, -100, 0.5, -80),
+    BackgroundTransparency = 1,
+    Text = "beep",
+    TextColor3 = Config.Visuals.Accent,
+    Font = Enum.Font.GothamBlack,
+    TextSize = 48,
+    ZIndex = 1001,
+    Parent = LoadingScreen
+})
+
+local LoadingText = UI:Create("TextLabel", {
+    Size = UDim2.new(0, 300, 0, 30),
+    Position = UDim2.new(0.5, -150, 0.5, -10),
+    BackgroundTransparency = 1,
+    Text = "Loading framework...",
+    TextColor3 = Color3.fromRGB(180, 180, 190),
+    Font = Enum.Font.GothamMedium,
+    TextSize = 14,
+    ZIndex = 1001,
+    Parent = LoadingScreen
+})
+
+local LoadingBar = UI:Create("Frame", {
+    Size = UDim2.new(0, 300, 0, 4),
+    Position = UDim2.new(0.5, -150, 0.5, 30),
+    BackgroundColor3 = Color3.fromRGB(30, 30, 36),
+    BorderSizePixel = 0,
+    ZIndex = 1001,
+    Parent = LoadingScreen
+})
+Instance.new("UICorner", LoadingBar).CornerRadius = UDim.new(1, 0)
+
+local LoadingFill = UI:Create("Frame", {
+    Size = UDim2.new(0, 0, 1, 0),
+    BackgroundColor3 = Config.Visuals.Accent,
+    BorderSizePixel = 0,
+    ZIndex = 1002,
+    Parent = LoadingBar
+})
+Instance.new("UICorner", LoadingFill).CornerRadius = UDim.new(1, 0)
+
+local LoadingVersion = UI:Create("TextLabel", {
+    Size = UDim2.new(0, 100, 0, 20),
+    Position = UDim2.new(0.5, -50, 0.5, 60),
+    BackgroundTransparency = 1,
+    Text = BEEP_VERSION,
+    TextColor3 = Config.Visuals.Accent,
+    Font = Enum.Font.GothamBold,
+    TextSize = 12,
+    ZIndex = 1001,
+    Parent = LoadingScreen
+})
+
+-- Animated loading
+task.spawn(function()
+    local loadingSteps = {
+        {text = "Initializing services...", progress = 0.2, wait = 0.2},
+        {text = "Loading modules...", progress = 0.4, wait = 0.2},
+        {text = "Setting up UI...", progress = 0.6, wait = 0.2},
+        {text = "Configuring features...", progress = 0.8, wait = 0.2},
+        {text = "Ready!", progress = 1, wait = 0.3},
+    }
+    
+    for _, step in ipairs(loadingSteps) do
+        LoadingText.Text = step.text
+        TweenService:Create(LoadingFill, TweenInfo.new(0.3, Enum.EasingStyle.Quad), {
+            Size = UDim2.new(step.progress, 0, 1, 0)
+        }):Play()
+        task.wait(step.wait)
+    end
+    
+    task.wait(0.2)
+    TweenService:Create(LoadingScreen, TweenInfo.new(0.4, Enum.EasingStyle.Quad), {
+        BackgroundTransparency = 1
+    }):Play()
+    for _, obj in pairs(LoadingScreen:GetChildren()) do
+        if obj:IsA("GuiObject") then
+            TweenService:Create(obj, TweenInfo.new(0.4), {TextTransparency = 1, BackgroundTransparency = 1}):Play()
+        end
+    end
+    task.wait(0.5)
+    LoadingScreen:Destroy()
+end)
+
 local Main = UI:Create("Frame", {
     Size = UDim2.new(0, 660, 0, 480), 
     Position = UDim2.new(0.5, -330, 0.5, -240),
@@ -712,7 +807,14 @@ UserInputService.InputBegan:Connect(function(input, gameProcessed)
     end
 end)
 
--- Tab System
+-- Tab System with Icons (Premium Style)
+local TabIcons = {
+    ["Combat"] = "🎯",
+    ["Visuals"] = "👁",
+    ["Physics"] = "⚡",
+    ["Misc"] = "⚙"
+}
+
 function UI:CreateTab(name)
     local tabIndex = #UI.Tabs
     local Page = UI:Create("ScrollingFrame", {
@@ -737,8 +839,8 @@ function UI:CreateTab(name)
     end)
     
     local TabButton = UI:Create("TextButton", {
-        Size = UDim2.new(0, 148, 0, 38),
-        Position = UDim2.new(0, 10, 0, 16 + (tabIndex * 46)),
+        Size = UDim2.new(0, 148, 0, 42), -- Slightly taller for icon
+        Position = UDim2.new(0, 10, 0, 16 + (tabIndex * 50)),
         BackgroundColor3 = Color3.fromRGB(20, 20, 26),
         BackgroundTransparency = tabIndex == 0 and 0 or 1,
         Text = "",
@@ -750,8 +852,8 @@ function UI:CreateTab(name)
 
     -- Accent selection indicator (left bar)
     local Indicator = UI:Create("Frame", {
-        Size = UDim2.new(0, 3, 0, tabIndex == 0 and 22 or 0),
-        Position = UDim2.new(0, 0, 0.5, tabIndex == 0 and -11 or 0),
+        Size = UDim2.new(0, 3, 0, tabIndex == 0 and 26 or 0),
+        Position = UDim2.new(0, 0, 0.5, tabIndex == 0 and -13 or 0),
         BackgroundColor3 = Config.Visuals.Accent,
         BorderSizePixel = 0,
         ZIndex = 4,
@@ -760,9 +862,23 @@ function UI:CreateTab(name)
     Instance.new("UICorner", Indicator).CornerRadius = UDim.new(1, 0)
     RegisterAccent(function(c) Indicator.BackgroundColor3 = c end)
 
+    -- Tab Icon
+    local icon = TabIcons[name] or "●"
+    local TabIcon = UI:Create("TextLabel", {
+        Size = UDim2.new(0, 24, 0, 24),
+        Position = UDim2.new(0, 12, 0.5, -12),
+        BackgroundTransparency = 1,
+        Text = icon,
+        TextColor3 = tabIndex == 0 and Config.Visuals.Accent or Color3.fromRGB(150, 140, 160),
+        Font = Enum.Font.GothamBold,
+        TextSize = 16,
+        ZIndex = 5,
+        Parent = TabButton
+    })
+
     local TabLabel = UI:Create("TextLabel", {
-        Size = UDim2.new(1, -20, 1, 0),
-        Position = UDim2.new(0, 16, 0, 0),
+        Size = UDim2.new(1, -48, 1, 0),
+        Position = UDim2.new(0, 42, 0, 0),
         BackgroundTransparency = 1,
         Text = name,
         TextColor3 = tabIndex == 0 and Color3.new(1,1,1) or Color3.fromRGB(150, 140, 160),
@@ -777,12 +893,14 @@ function UI:CreateTab(name)
         if not Page.Visible then
             TweenService:Create(TabButton, TweenInfo.new(0.15), {BackgroundTransparency = 0.5}):Play()
             TweenService:Create(TabLabel, TweenInfo.new(0.15), {TextColor3 = Color3.fromRGB(210, 200, 220)}):Play()
+            TweenService:Create(TabIcon, TweenInfo.new(0.15), {TextColor3 = Color3.fromRGB(210, 200, 220)}):Play()
         end
     end)
     TabButton.MouseLeave:Connect(function()
         if not Page.Visible then
             TweenService:Create(TabButton, TweenInfo.new(0.15), {BackgroundTransparency = 1}):Play()
             TweenService:Create(TabLabel, TweenInfo.new(0.15), {TextColor3 = Color3.fromRGB(150, 140, 160)}):Play()
+            TweenService:Create(TabIcon, TweenInfo.new(0.15), {TextColor3 = Color3.fromRGB(150, 140, 160)}):Play()
         end
     end)
     
@@ -791,8 +909,10 @@ function UI:CreateTab(name)
         for _, v in pairs(Sidebar:GetChildren()) do 
             if v:IsA("TextButton") then 
                 local lbl = v:FindFirstChildOfClass("TextLabel")
+                local icn = v:FindFirstChild("TextLabel")
                 local ind = v:FindFirstChildOfClass("Frame")
                 if lbl then TweenService:Create(lbl, TweenInfo.new(0.15), {TextColor3 = Color3.fromRGB(150, 140, 160)}):Play() end
+                if icn and icn ~= lbl then TweenService:Create(icn, TweenInfo.new(0.15), {TextColor3 = Color3.fromRGB(150, 140, 160)}):Play() end
                 TweenService:Create(v, TweenInfo.new(0.15), {BackgroundTransparency = 1}):Play()
                 if ind then TweenService:Create(ind, TweenInfo.new(0.15), {Size = UDim2.new(0, 3, 0, 0), Position = UDim2.new(0, 0, 0.5, 0)}):Play() end
             end 
@@ -800,12 +920,20 @@ function UI:CreateTab(name)
         Page.Visible = true
         TweenService:Create(TabButton, TweenInfo.new(0.15), {BackgroundTransparency = 0}):Play()
         TweenService:Create(TabLabel, TweenInfo.new(0.15), {TextColor3 = Color3.new(1,1,1)}):Play()
-        TweenService:Create(Indicator, TweenInfo.new(0.15), {Size = UDim2.new(0, 3, 0, 22), Position = UDim2.new(0, 0, 0.5, -11)}):Play()
+        TweenService:Create(TabIcon, TweenInfo.new(0.15), {TextColor3 = Config.Visuals.Accent}):Play()
+        TweenService:Create(Indicator, TweenInfo.new(0.15), {Size = UDim2.new(0, 3, 0, 26), Position = UDim2.new(0, 0, 0.5, -13)}):Play()
     end)
     
     if tabIndex == 0 then
         Page.Visible = true
+        TabIcon.TextColor3 = Config.Visuals.Accent
     end
+    
+    RegisterAccent(function(c)
+        if Page.Visible then
+            TabIcon.TextColor3 = c
+        end
+    end)
     
     table.insert(UI.Tabs, Page)
     return Page
@@ -1788,8 +1916,15 @@ RunService.RenderStepped:Connect(function(dt)
     -- Snap camera to target (this is what registers hits in client-sided games)
     Camera.CFrame = CFrame.new(Camera.CFrame.Position, aimPos)
     
-    -- Note: For auto-shoot with Ragebot, enable Triggerbot
-    -- The Triggerbot will handle shooting when aimed at target
+    -- ULTRA FAST AUTO-SHOOT: Shoot on EVERY frame when Triggerbot is enabled
+    if Config.Combat.Triggerbot then
+        local currentTime = tick()
+        local fireDelay = Config.Combat.UltraRapidFire and Config.Combat.UltraRapidFireDelay or Config.Combat.TriggerDelay
+        if currentTime - lastShootTime >= fireDelay then
+            Shoot()
+            lastShootTime = currentTime
+        end
+    end
 end)
 
 -- ===== RAGEBOT NOCLIP (with collision restore) =====
