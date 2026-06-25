@@ -1637,27 +1637,36 @@ RunService.RenderStepped:Connect(function()
         if Config.Combat.HoldToAim and aimHoldActive then
             -- Check if we have a persistent hold target
             if holdTargetLock then
-                -- Verify target is still valid (alive)
+                -- Verify target is still valid (alive and part exists)
+                local isValid = false
                 if holdTargetLock.Character then
                     local hum = holdTargetLock.Character:FindFirstChildOfClass("Humanoid")
-                    local part = holdTargetLock.Character:FindFirstChild(Config.Combat.TargetPart)
-                    if hum and hum.Health > 0 and part then
+                    local part = holdTargetLock.Character:FindFirstChild(Config.Combat.TargetPart) or 
+                                 holdTargetLock.Character:FindFirstChild("Head") or
+                                 holdTargetLock.Character:FindFirstChild("HumanoidRootPart")
+                    -- Check if alive AND part is not falling (Y position check)
+                    if hum and hum.Health > 0 and part and part.Position.Y >= -40 then
+                        isValid = true
                         target = holdTargetLock
-                    else
-                        -- Target died, clear lock
-                        holdTargetLock = nil
                     end
-                else
-                    -- Character doesn't exist, clear lock
+                end
+                
+                -- Target died or fell, clear lock immediately
+                if not isValid then
                     holdTargetLock = nil
+                    target = nil
                 end
             end
             
             -- If no hold target locked yet, find one
             if not holdTargetLock then
-                holdTargetLock = Combat:GetClosestPlayer()
-                if holdTargetLock then
-                    target = holdTargetLock
+                local closestPlayer = Combat:GetClosestPlayer()
+                if closestPlayer and closestPlayer.Character then
+                    local hum = closestPlayer.Character:FindFirstChildOfClass("Humanoid")
+                    if hum and hum.Health > 0 then
+                        holdTargetLock = closestPlayer
+                        target = holdTargetLock
+                    end
                 end
             end
         -- NORMAL MODE or LOCK KEY MODE
@@ -1685,6 +1694,18 @@ RunService.RenderStepped:Connect(function()
             if target and target.Character then
                 local hum = target.Character:FindFirstChildOfClass("Humanoid")
                 if hum then lastAimTargetHealth = hum.Health end
+            end
+        end
+        
+        if target and target.Character then
+            -- Verify target is still alive before aiming
+            local hum = target.Character:FindFirstChildOfClass("Humanoid")
+            if not hum or hum.Health <= 0 then
+                -- Target just died, stop aiming
+                if Config.Combat.HoldToAim then
+                    holdTargetLock = nil
+                end
+                target = nil
             end
         end
         
@@ -1722,7 +1743,8 @@ RunService.RenderStepped:Connect(function()
                         or target.Character:FindFirstChildOfClass("MeshPart")
                 end
                 
-                if targetPart then
+                -- Only aim if part exists and is above ground (not fallen)
+                if targetPart and targetPart.Position.Y >= -40 then
                     local targetCFrame = CFrame.new(Camera.CFrame.Position, targetPart.Position)
                     Camera.CFrame = Camera.CFrame:Lerp(targetCFrame, Config.Combat.Smoothness * 0.1)
                 end
