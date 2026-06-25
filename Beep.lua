@@ -2,7 +2,7 @@
 -- Universal ESP, Aimbot & Physics Controller
 
 -- VERSION CONTROL (Update this for each new version)
-local BEEP_VERSION = "v4.0.0"
+local BEEP_VERSION = "v4.1.0"
 
 local StartTime = tick()
 if not game:IsLoaded() then
@@ -85,7 +85,8 @@ local Config = {
         RagebotNoClip = false,
         RagebotGameProfile = "Auto",
         RagebotFaceTarget = false,
-        RagebotIgnoreImmune = false
+        RagebotIgnoreImmune = false,
+        RagebotGodMode = false  -- God Mode when Ragebot is active
     },
     Physics = {
         Speed = 1,
@@ -1691,6 +1692,66 @@ RunService.Stepped:Connect(function()
     end
 end)
 
+-- ===== RAGEBOT GOD MODE =====
+-- God Mode for Ragebot (only works in certain games with client-sided health)
+-- Compatible Games: Da Hood, Hood Modded, 1v1 Combat Arena, some FPS games
+local GodModeCompatibleGames = {
+    [2788229376] = "Da Hood",
+    [7213786345] = "Hood Modded", 
+    [3233893879] = "Bad Business",
+    [4282985734] = "1v1 Combat Arena",
+    [292439477] = "Phantom Forces",
+    [113491250] = "Typical Colors 2",
+    -- Add more PlaceIds here for games where God Mode works
+}
+
+local isGodModeCompatible = GodModeCompatibleGames[game.PlaceId] ~= nil
+local godModeActive = false
+
+if isGodModeCompatible then
+    RunService.Heartbeat:Connect(function()
+        local char = LocalPlayer.Character
+        if not char then return end
+        local hum = char:FindFirstChildOfClass("Humanoid")
+        if not hum then return end
+        
+        local wantGodMode = UI.Active and Config.Combat.Ragebot and Config.Combat.RagebotGodMode
+        
+        if wantGodMode and not godModeActive then
+            -- Activate God Mode
+            godModeActive = true
+            UI:Notify("God Mode: ON (" .. GodModeCompatibleGames[game.PlaceId] .. " compatible)")
+            
+            -- Method 1: Set health to max constantly
+            hum.HealthChanged:Connect(function()
+                if godModeActive and Config.Combat.RagebotGodMode then
+                    hum.Health = hum.MaxHealth
+                end
+            end)
+            
+        elseif not wantGodMode and godModeActive then
+            -- Deactivate God Mode
+            godModeActive = false
+            UI:Notify("God Mode: OFF")
+        end
+        
+        -- Keep health at max while active
+        if godModeActive and Config.Combat.RagebotGodMode then
+            if hum.Health < hum.MaxHealth then
+                hum.Health = hum.MaxHealth
+            end
+        end
+    end)
+else
+    -- Show warning that God Mode won't work in this game
+    task.spawn(function()
+        task.wait(3)
+        if Config.Combat.RagebotGodMode then
+            UI:Notify("God Mode: Not compatible with this game")
+        end
+    end)
+end
+
 -- ===== PANIC KEY =====
 -- Instantly disables all aggressive/movement features.
 -- Ignores gameProcessed on purpose, so it works even with the Roblox menu/chat open.
@@ -2626,6 +2687,7 @@ UI:CreateSlider(CombatPage, "Ragebot Keep Distance", 2, 30, "Combat", "RagebotTP
 UI:CreateToggle(CombatPage, "Ragebot NoClip (pass walls)", "Combat", "RagebotNoClip")
 UI:CreateToggle(CombatPage, "Ragebot Face Target (body aim)", "Combat", "RagebotFaceTarget")
 UI:CreateToggle(CombatPage, "Ragebot Ignore Immune (ForceField)", "Combat", "RagebotIgnoreImmune")
+UI:CreateToggle(CombatPage, "Ragebot God Mode (certain games only)", "Combat", "RagebotGodMode")
 
 -- Visual Controls
 UI:CreateToggle(VisualsPage, "Enable ESP", "Visuals", "Enabled")
