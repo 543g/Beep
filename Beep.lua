@@ -1,5 +1,6 @@
 -- Beep Multi-Tool Framework
 -- Universal ESP, Aimbot & Physics Controller
+-- Stable Version
 
 -- VERSION CONTROL (Update this for each new version)
 local BEEP_VERSION = "v4.2.2"
