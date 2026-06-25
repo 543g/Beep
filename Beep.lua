@@ -2,7 +2,7 @@
 -- Universal ESP, Aimbot & Physics Controller
 
 -- VERSION CONTROL (Update this for each new version)
-local BEEP_VERSION = "v4.1.0"
+local BEEP_VERSION = "v4.1.1"
 
 local StartTime = tick()
 if not game:IsLoaded() then
@@ -1702,11 +1702,13 @@ local GodModeCompatibleGames = {
     [4282985734] = "1v1 Combat Arena",
     [292439477] = "Phantom Forces",
     [113491250] = "Typical Colors 2",
+    [286090429] = "Arsenal", -- Arsenal (special method)
     -- Add more PlaceIds here for games where God Mode works
 }
 
 local isGodModeCompatible = GodModeCompatibleGames[game.PlaceId] ~= nil
 local godModeActive = false
+local isArsenal = game.PlaceId == 286090429
 
 if isGodModeCompatible then
     RunService.Heartbeat:Connect(function()
@@ -1722,12 +1724,23 @@ if isGodModeCompatible then
             godModeActive = true
             UI:Notify("God Mode: ON (" .. GodModeCompatibleGames[game.PlaceId] .. " compatible)")
             
-            -- Method 1: Set health to max constantly
-            hum.HealthChanged:Connect(function()
-                if godModeActive and Config.Combat.RagebotGodMode then
-                    hum.Health = hum.MaxHealth
-                end
-            end)
+            if isArsenal then
+                -- Arsenal-specific god mode (prevents death)
+                hum.HealthChanged:Connect(function()
+                    if godModeActive and Config.Combat.RagebotGodMode then
+                        if hum.Health < hum.MaxHealth * 0.5 then
+                            hum.Health = hum.MaxHealth
+                        end
+                    end
+                end)
+            else
+                -- Standard method for other games
+                hum.HealthChanged:Connect(function()
+                    if godModeActive and Config.Combat.RagebotGodMode then
+                        hum.Health = hum.MaxHealth
+                    end
+                end)
+            end
             
         elseif not wantGodMode and godModeActive then
             -- Deactivate God Mode
@@ -1737,8 +1750,16 @@ if isGodModeCompatible then
         
         -- Keep health at max while active
         if godModeActive and Config.Combat.RagebotGodMode then
-            if hum.Health < hum.MaxHealth then
-                hum.Health = hum.MaxHealth
+            if isArsenal then
+                -- Arsenal: heal when health drops below 50%
+                if hum.Health < hum.MaxHealth * 0.5 then
+                    hum.Health = hum.MaxHealth
+                end
+            else
+                -- Other games: always keep at max
+                if hum.Health < hum.MaxHealth then
+                    hum.Health = hum.MaxHealth
+                end
             end
         end
     end)
@@ -2464,7 +2485,9 @@ task.spawn(function()
         
         -- Auto aim and attack closest enemy
         if closestEnemy and closestEnemy.Character then
-            local targetPart = closestEnemy.Character:FindFirstChild("Head") or closestEnemy.Character:FindFirstChild("HumanoidRootPart")
+            local targetPart = closestEnemy.Character:FindFirstChild(Config.Combat.TargetPart)
+                or closestEnemy.Character:FindFirstChild("Head")
+                or closestEnemy.Character:FindFirstChild("HumanoidRootPart")
             if targetPart then
                 -- Auto aim to target
                 local targetCFrame = CFrame.new(Camera.CFrame.Position, targetPart.Position)
