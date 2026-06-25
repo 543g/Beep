@@ -249,13 +249,19 @@ task.spawn(function()
     end
     
     task.wait(0.2)
+    -- Fade out background
     TweenService:Create(LoadingScreen, TweenInfo.new(0.4, Enum.EasingStyle.Quad), {
         BackgroundTransparency = 1
     }):Play()
+    -- Fade out all child elements
     for _, obj in pairs(LoadingScreen:GetChildren()) do
         if obj:IsA("GuiObject") then
             TweenService:Create(obj, TweenInfo.new(0.4), {TextTransparency = 1, BackgroundTransparency = 1}):Play()
         end
+    end
+    -- Make sure LoadingVersion also fades
+    if LoadingVersion then
+        TweenService:Create(LoadingVersion, TweenInfo.new(0.4), {TextTransparency = 1}):Play()
     end
     task.wait(0.5)
     LoadingScreen:Destroy()
