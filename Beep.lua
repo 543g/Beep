@@ -2,7 +2,7 @@
 -- Universal ESP, Aimbot & Physics Controller
 
 -- VERSION CONTROL (Update this for each new version)
-local BEEP_VERSION = "v5.0.1"
+local BEEP_VERSION = "v4.2.2"
 
 local StartTime = tick()
 if not game:IsLoaded() then
@@ -165,108 +165,10 @@ UI.Screen = UI:Create("ScreenGui", {
     Parent = CoreGui
 })
 
--- ===== PREMIUM LOADING SCREEN =====
-local LoadingScreen = UI:Create("Frame", {
-    Size = UDim2.new(1, 0, 1, 0),
-    Position = UDim2.new(0, 0, 0, 0),
-    BackgroundColor3 = Color3.fromRGB(8, 8, 12),
-    BorderSizePixel = 0,
-    ZIndex = 1000,
-    Parent = UI.Screen
-})
-
-local LoadingLogo = UI:Create("TextLabel", {
-    Size = UDim2.new(0, 200, 0, 60),
-    Position = UDim2.new(0.5, -100, 0.5, -80),
-    BackgroundTransparency = 1,
-    Text = "beep",
-    TextColor3 = Config.Visuals.Accent,
-    Font = Enum.Font.GothamBlack,
-    TextSize = 48,
-    ZIndex = 1001,
-    Parent = LoadingScreen
-})
-
-local LoadingText = UI:Create("TextLabel", {
-    Size = UDim2.new(0, 300, 0, 30),
-    Position = UDim2.new(0.5, -150, 0.5, -10),
-    BackgroundTransparency = 1,
-    Text = "Loading framework...",
-    TextColor3 = Color3.fromRGB(180, 180, 190),
-    Font = Enum.Font.GothamMedium,
-    TextSize = 14,
-    ZIndex = 1001,
-    Parent = LoadingScreen
-})
-
-local LoadingBar = UI:Create("Frame", {
-    Size = UDim2.new(0, 300, 0, 4),
-    Position = UDim2.new(0.5, -150, 0.5, 30),
-    BackgroundColor3 = Color3.fromRGB(30, 30, 36),
-    BorderSizePixel = 0,
-    ZIndex = 1001,
-    Parent = LoadingScreen
-})
-Instance.new("UICorner", LoadingBar).CornerRadius = UDim.new(1, 0)
-
-local LoadingFill = UI:Create("Frame", {
-    Size = UDim2.new(0, 0, 1, 0),
-    BackgroundColor3 = Config.Visuals.Accent,
-    BorderSizePixel = 0,
-    ZIndex = 1002,
-    Parent = LoadingBar
-})
-Instance.new("UICorner", LoadingFill).CornerRadius = UDim.new(1, 0)
-
-local LoadingVersion = UI:Create("TextLabel", {
-    Size = UDim2.new(0, 100, 0, 20),
-    Position = UDim2.new(0.5, -50, 0.5, 60),
-    BackgroundTransparency = 1,
-    Text = BEEP_VERSION,
-    TextColor3 = Config.Visuals.Accent,
-    Font = Enum.Font.GothamBold,
-    TextSize = 12,
-    ZIndex = 1001,
-    Parent = LoadingScreen
-})
-
--- Animated loading
-task.spawn(function()
-    local loadingSteps = {
-        {text = "Initializing services...", progress = 0.2, wait = 0.3},
-        {text = "Loading modules...", progress = 0.4, wait = 0.3},
-        {text = "Setting up UI...", progress = 0.6, wait = 0.3},
-        {text = "Configuring features...", progress = 0.8, wait = 0.3},
-        {text = "Ready!", progress = 1, wait = 0.4},
-    }
-    
-    for _, step in ipairs(loadingSteps) do
-        LoadingText.Text = step.text
-        TweenService:Create(LoadingFill, TweenInfo.new(0.4, Enum.EasingStyle.Quad), {
-            Size = UDim2.new(step.progress, 0, 1, 0)
-        }):Play()
-        task.wait(step.wait)
-    end
-    
-    -- Fade out loading screen
-    task.wait(0.2)
-    TweenService:Create(LoadingScreen, TweenInfo.new(0.4, Enum.EasingStyle.Quad), {
-        BackgroundTransparency = 1
-    }):Play()
-    for _, obj in pairs(LoadingScreen:GetChildren()) do
-        if obj:IsA("GuiObject") then
-            TweenService:Create(obj, TweenInfo.new(0.4), {TextTransparency = 1, BackgroundTransparency = 1}):Play()
-        end
-    end
-    task.wait(0.5)
-    LoadingScreen:Destroy()
-end)
-
 local Main = UI:Create("Frame", {
     Size = UDim2.new(0, 660, 0, 480), 
     Position = UDim2.new(0.5, -330, 0.5, -240),
     BackgroundColor3 = Color3.fromRGB(10, 10, 14),
-    BackgroundTransparency = 0.08, -- Glassmorphism effect
     BorderSizePixel = 0, 
     ClipsDescendants = true,
     ZIndex = 1,
@@ -274,92 +176,41 @@ local Main = UI:Create("Frame", {
 })
 Instance.new("UICorner", Main).CornerRadius = UDim.new(0, 12)
 
--- Glassmorphism blur effect (premium look, optimized)
-local MainBlur = Instance.new("ImageLabel", Main)
-MainBlur.Size = UDim2.new(1, 0, 1, 0)
-MainBlur.BackgroundTransparency = 1
-MainBlur.Image = "rbxassetid://8992230677" -- Glass texture
-MainBlur.ImageColor3 = Color3.fromRGB(10, 10, 14)
-MainBlur.ImageTransparency = 0.8 -- Increased from 0.7 to 0.8 (lighter, less GPU load)
-MainBlur.ScaleType = Enum.ScaleType.Tile
-MainBlur.TileSize = UDim2.new(0, 256, 0, 256) -- Increased tile size (less rendering)
-MainBlur.ZIndex = 0
-
--- Animated gradient overlay (premium effect)
-local AnimatedGradient = UI:Create("UIGradient", {
+-- Subtle gradient on main background
+UI:Create("UIGradient", {
     Color = ColorSequence.new({
         ColorSequenceKeypoint.new(0, Color3.fromRGB(12, 12, 16)),
-        ColorSequenceKeypoint.new(0.5, Config.Visuals.Accent),
         ColorSequenceKeypoint.new(1, Color3.fromRGB(8, 8, 12))
     }),
-    Rotation = 45,
-    Transparency = NumberSequence.new({
-        NumberSequenceKeypoint.new(0, 0.85),
-        NumberSequenceKeypoint.new(0.5, 0.7),
-        NumberSequenceKeypoint.new(1, 0.85)
-    }),
+    Rotation = 90,
     Parent = Main
 })
-
--- Animate the gradient (highly optimized: only when menu is visible)
-local lastGradientUpdate = 0
-RunService.RenderStepped:Connect(function()
-    if not Main.Parent or not UI.Visible then return end
-    local now = tick()
-    if now - lastGradientUpdate >= 0.1 then -- Update every 0.1s instead of every frame
-        AnimatedGradient.Rotation = (AnimatedGradient.Rotation + 0.8) % 360
-        lastGradientUpdate = now
-    end
-end)
 
 local MainStroke = UI:Create("UIStroke", {
-    Color = Config.Visuals.Accent,
+    Color = Color3.fromRGB(36, 36, 44),
     Thickness = 1.5, 
-    Transparency = 0.4,
+    Transparency = 0.2,
     Parent = Main
 })
 
-RegisterAccent(function(c) 
-    MainStroke.Color = c
-    AnimatedGradient.Color = ColorSequence.new({
-        ColorSequenceKeypoint.new(0, Color3.fromRGB(12, 12, 16)),
-        ColorSequenceKeypoint.new(0.5, c),
-        ColorSequenceKeypoint.new(1, Color3.fromRGB(8, 8, 12))
-    })
-end)
-
--- ===== TOP BAR (Title + Window Controls + Premium Glow) =====
+-- ===== TOP BAR (Title + Window Controls) =====
 local TopBar = UI:Create("Frame", {
     Size = UDim2.new(1, 0, 0, 46),
     BackgroundColor3 = Color3.fromRGB(14, 14, 18),
-    BackgroundTransparency = 0.1,
     BorderSizePixel = 0,
     ZIndex = 6,
     Parent = Main
 })
 Instance.new("UICorner", TopBar).CornerRadius = UDim.new(0, 12)
-
--- Premium glow effect on topbar
-local TopBarGlow = UI:Create("Frame", {
-    Size = UDim2.new(1, 0, 0, 2), Position = UDim2.new(0, 0, 1, -2),
-    BackgroundColor3 = Config.Visuals.Accent, BorderSizePixel = 0, ZIndex = 7,
-    BackgroundTransparency = 0.3,
-    Parent = TopBar
-})
-UI:Create("UIGradient", {
-    Transparency = NumberSequence.new({
-        NumberSequenceKeypoint.new(0, 0.7),
-        NumberSequenceKeypoint.new(0.5, 0),
-        NumberSequenceKeypoint.new(1, 0.7)
-    }),
-    Parent = TopBarGlow
-})
-RegisterAccent(function(c) TopBarGlow.BackgroundColor3 = c end)
-
 -- cover bottom rounded corners of topbar
 UI:Create("Frame", {
     Size = UDim2.new(1, 0, 0, 14), Position = UDim2.new(0, 0, 1, -14),
-    BackgroundColor3 = Color3.fromRGB(14, 14, 18), BackgroundTransparency = 0.1, BorderSizePixel = 0, ZIndex = 6, Parent = TopBar
+    BackgroundColor3 = Color3.fromRGB(14, 14, 18), BorderSizePixel = 0, ZIndex = 6, Parent = TopBar
+})
+-- bottom border line of topbar
+UI:Create("Frame", {
+    Size = UDim2.new(1, 0, 0, 1), Position = UDim2.new(0, 0, 1, -1),
+    BackgroundColor3 = Color3.fromRGB(30, 30, 38), BorderSizePixel = 0, ZIndex = 7, Parent = TopBar
 })
 
 -- Accent dot / logo mark
@@ -564,154 +415,17 @@ UserInputService.InputChanged:Connect(function(input)
     end
 end)
 
--- Update Watermark (optimized)
-local lastWatermarkUpdate = 0
-RunService.RenderStepped:Connect(function()
-    if not UI.Active or not Config.Misc.Watermark then 
-        WatermarkFrame.Visible = false
-        return 
-    end
-    
-    local now = tick()
-    if now - lastWatermarkUpdate >= 1 then -- Update every 1 second instead of 0.5
-        local fps = math.floor(1 / game:GetService("RunService").RenderStepped:Wait())
-        local ping = math.floor(game:GetService("Stats").Network.ServerStatsItem["Data Ping"]:GetValue())
-        Watermark.Text = string.format("beep | %dfps | %dms", fps, ping)
-        WatermarkFrame.Visible = true
-        lastWatermarkUpdate = now
-    end
-end)
-
--- ===== ARRAYLIST (Active Features List - Premium Style) =====
-local ArraylistFrame = UI:Create("Frame", {
-    Size = UDim2.new(0, 220, 0, 0),
-    Position = UDim2.new(1, -230, 0, 10),
-    BackgroundTransparency = 1,
-    AutomaticSize = Enum.AutomaticSize.Y,
-    ZIndex = 100,
-    Parent = UI.Screen
-})
-
-local ArraylistLayout = UI:Create("UIListLayout", {
-    Padding = UDim.new(0, 4),
-    SortOrder = Enum.SortOrder.LayoutOrder,
-    HorizontalAlignment = Enum.HorizontalAlignment.Right,
-    Parent = ArraylistFrame
-})
-
-local ArraylistItems = {}
-
-local function UpdateArraylist()
-    -- Clear old items
-    for _, item in pairs(ArraylistItems) do
-        if item and item.Parent then item:Destroy() end
-    end
-    ArraylistItems = {}
-    
-    local activeFeatures = {}
-    
-    -- Combat features
-    if Config.Combat.SilentAim then table.insert(activeFeatures, {name = "Aim Assist", color = Config.Visuals.Accent, key = Config.Combat.LockKey}) end
-    if Config.Combat.Ragebot then table.insert(activeFeatures, {name = "Ragebot", color = Color3.fromRGB(255, 80, 80), key = ""}) end
-    if Config.Combat.Triggerbot then table.insert(activeFeatures, {name = "Triggerbot", color = Color3.fromRGB(255, 200, 80), key = ""}) end
-    if Config.Combat.KillAura then table.insert(activeFeatures, {name = "Kill Aura", color = Color3.fromRGB(255, 100, 100), key = ""}) end
-    if Config.Combat.UltraRapidFire then table.insert(activeFeatures, {name = "Ultra Rapid Fire", color = Color3.fromRGB(255, 150, 50), key = ""}) end
-    if Config.Combat.NoRecoil then table.insert(activeFeatures, {name = "No Recoil", color = Color3.fromRGB(100, 200, 255), key = ""}) end
-    if Config.Combat.NoSpread then table.insert(activeFeatures, {name = "No Spread", color = Color3.fromRGB(100, 200, 255), key = ""}) end
-    
-    -- Physics features
-    if Config.Physics.SpeedActive then table.insert(activeFeatures, {name = "Speed Hack", color = Color3.fromRGB(80, 255, 200), key = Config.Physics.SpeedKey}) end
-    if Config.Physics.FlyActive then table.insert(activeFeatures, {name = "Fly", color = Color3.fromRGB(120, 180, 255), key = Config.Physics.FlyKey}) end
-    if Config.Physics.NoClipActive then table.insert(activeFeatures, {name = "NoClip", color = Color3.fromRGB(200, 150, 255), key = Config.Misc.NoClipToggleKey}) end
-    if Config.Physics.ClickTP then table.insert(activeFeatures, {name = "Click TP", color = Color3.fromRGB(150, 100, 255), key = Config.Physics.ClickTPKey}) end
-    
-    -- Visuals features
-    if Config.Visuals.Enabled then table.insert(activeFeatures, {name = "ESP", color = Color3.fromRGB(80, 255, 120), key = ""}) end
-    if Config.Misc.Fullbright then table.insert(activeFeatures, {name = "Fullbright", color = Color3.fromRGB(255, 255, 150), key = ""}) end
-    
-    -- Create arraylist items
-    for i, feature in ipairs(activeFeatures) do
-        local item = UI:Create("Frame", {
-            Size = UDim2.new(0, 0, 0, 24),
-            BackgroundColor3 = Color3.fromRGB(16, 16, 20),
-            BackgroundTransparency = 0.15,
-            AutomaticSize = Enum.AutomaticSize.X,
-            LayoutOrder = i,
-            ZIndex = 101,
-            Parent = ArraylistFrame
-        })
-        Instance.new("UICorner", item).CornerRadius = UDim.new(0, 6)
-        UI:Create("UIPadding", {PaddingLeft = UDim.new(0, 10), PaddingRight = UDim.new(0, 10), Parent = item})
-        
-        -- Accent side indicator
-        local indicator = UI:Create("Frame", {
-            Size = UDim2.new(0, 2, 1, -8), Position = UDim2.new(0, 3, 0, 4),
-            BackgroundColor3 = feature.color, BorderSizePixel = 0, ZIndex = 102, Parent = item
-        })
-        Instance.new("UICorner", indicator).CornerRadius = UDim.new(1, 0)
-        
-        -- Feature label
-        local label = UI:Create("TextLabel", {
-            Size = UDim2.new(0, 0, 1, 0), Position = UDim2.new(0, 10, 0, 0),
-            BackgroundTransparency = 1,
-            Text = feature.name .. (feature.key ~= "" and " [" .. feature.key .. "]" or ""),
-            TextColor3 = Color3.new(1, 1, 1),
-            Font = Enum.Font.GothamBold,
-            TextSize = 11,
-            TextXAlignment = Enum.TextXAlignment.Left,
-            AutomaticSize = Enum.AutomaticSize.X,
-            ZIndex = 102,
-            Parent = item
-        })
-        
-        table.insert(ArraylistItems, item)
-    end
-end
-
--- Update arraylist (highly optimized)
-local lastArraylistUpdate = 0
-local lastActiveFeatures = {}
-
-local function GetActiveFeaturesList()
-    local features = {}
-    local featureStr = ""
-    
-    -- Combat features
-    if Config.Combat.SilentAim then featureStr = featureStr .. "SA," end
-    if Config.Combat.Ragebot then featureStr = featureStr .. "RB," end
-    if Config.Combat.Triggerbot then featureStr = featureStr .. "TB," end
-    if Config.Combat.KillAura then featureStr = featureStr .. "KA," end
-    if Config.Combat.UltraRapidFire then featureStr = featureStr .. "URF," end
-    if Config.Combat.NoRecoil then featureStr = featureStr .. "NR," end
-    if Config.Combat.NoSpread then featureStr = featureStr .. "NS," end
-    
-    -- Physics features
-    if Config.Physics.SpeedActive then featureStr = featureStr .. "SPD," end
-    if Config.Physics.FlyActive then featureStr = featureStr .. "FLY," end
-    if Config.Physics.NoClipActive then featureStr = featureStr .. "NC," end
-    if Config.Physics.ClickTP then featureStr = featureStr .. "CTP," end
-    
-    -- Visuals features
-    if Config.Visuals.Enabled then featureStr = featureStr .. "ESP," end
-    if Config.Misc.Fullbright then featureStr = featureStr .. "FB," end
-    
-    return featureStr
-end
-
-RunService.RenderStepped:Connect(function()
-    if not UI.Active or not UI.Visible then return end
-    
-    local now = tick()
-    if now - lastArraylistUpdate >= 1 then -- Update every 1 second
-        local currentFeatures = GetActiveFeaturesList()
-        
-        -- Only update if features changed (huge optimization)
-        if currentFeatures ~= lastActiveFeatures then
-            UpdateArraylist()
-            lastActiveFeatures = currentFeatures
+-- Update Watermark
+task.spawn(function()
+    while task.wait(0.5) do
+        if UI.Active and Config.Misc.Watermark then
+            local fps = math.floor(1 / RunService.RenderStepped:Wait())
+            local ping = math.floor(game:GetService("Stats").Network.ServerStatsItem["Data Ping"]:GetValue())
+            Watermark.Text = string.format("beep | %dfps | %dms", fps, ping)
+            WatermarkFrame.Visible = Config.Misc.Watermark
+        else
+            WatermarkFrame.Visible = false
         end
-        
-        lastArraylistUpdate = now
     end
 end)
 
@@ -811,143 +525,47 @@ SearchBox:GetPropertyChangedSignal("Text"):Connect(function()
     end
 end)
 
--- Notification System (Highly Optimized - Reuses frames)
-local NotificationPool = {} -- Pool of notification frames to reuse
-local ActiveNotifications = {}
-local MaxNotifications = 3
-
-local function GetNotificationFrame()
-    -- Try to reuse an existing notification frame
-    for i, notif in ipairs(NotificationPool) do
-        if not notif.InUse then
-            notif.InUse = true
-            return notif
-        end
-    end
-    
-    -- Create new notification if pool is empty
-    local n = UI:Create("Frame", {
-        Size = UDim2.new(0, 300, 0, 52), 
-        Position = UDim2.new(1, 10, 0.85, 0),
-        BackgroundColor3 = Color3.fromRGB(18, 18, 24), 
-        BackgroundTransparency = 0.1,
-        Visible = false,
-        ZIndex = 20,
-        Parent = UI.Screen
-    })
-    Instance.new("UICorner", n).CornerRadius = UDim.new(0, 10)
-    
-    -- Premium glow border
-    local notifStroke = UI:Create("UIStroke", {Color = Config.Visuals.Accent, Thickness = 1.5, Transparency = 0.4, Parent = n})
-    
-    -- Glassmorphism blur effect (lighter for performance)
-    local notifBlur = Instance.new("ImageLabel", n)
-    notifBlur.Size = UDim2.new(1, 0, 1, 0)
-    notifBlur.BackgroundTransparency = 1
-    notifBlur.Image = "rbxassetid://8992230677"
-    notifBlur.ImageColor3 = Color3.fromRGB(18, 18, 24)
-    notifBlur.ImageTransparency = 0.9 -- Increased from 0.85
-    notifBlur.ScaleType = Enum.ScaleType.Tile
-    notifBlur.TileSize = UDim2.new(0, 128, 0, 128)
-    notifBlur.ZIndex = 19
-
-    -- accent side bar with gradient
-    local bar = UI:Create("Frame", {
-        Size = UDim2.new(0, 4, 1, -20), Position = UDim2.new(0, 10, 0, 10),
-        BackgroundColor3 = Config.Visuals.Accent, ZIndex = 21, Parent = n
-    })
-    Instance.new("UICorner", bar).CornerRadius = UDim.new(0, 2)
-    UI:Create("UIGradient", {
-        Transparency = NumberSequence.new({
-            NumberSequenceKeypoint.new(0, 0.3),
-            NumberSequenceKeypoint.new(0.5, 0),
-            NumberSequenceKeypoint.new(1, 0.3)
-        }),
-        Rotation = 90,
-        Parent = bar
-    })
-    
-    local label = UI:Create("TextLabel", {
-        Size = UDim2.new(1, -36, 1, 0), 
-        Position = UDim2.new(0, 24, 0, 0),
-        BackgroundTransparency = 1, 
-        Text = "",
-        TextColor3 = Color3.new(1,1,1), 
-        Font = Enum.Font.GothamMedium, 
-        TextSize = 13,
-        TextXAlignment = Enum.TextXAlignment.Left,
-        TextWrapped = true,
-        ZIndex = 21,
-        Parent = n
-    })
-    
-    local notif = {
-        Frame = n,
-        Label = label,
-        Stroke = notifStroke,
-        Bar = bar,
-        InUse = true
-    }
-    
-    table.insert(NotificationPool, notif)
-    return notif
-end
-
-local function ReleaseNotification(notif)
-    notif.InUse = false
-    notif.Frame.Visible = false
-    notif.Frame.Position = UDim2.new(1, 10, 0.85, 0)
-    notif.Frame.BackgroundTransparency = 0.1
-    notif.Stroke.Transparency = 0.4
-    notif.Bar.BackgroundTransparency = 0
-    notif.Label.TextTransparency = 0
-end
-
+-- Notification System
 function UI:Notify(text)
     if not UI.Active then return end
-    
-    -- Limit active notifications
-    if #ActiveNotifications >= MaxNotifications then
-        local oldest = table.remove(ActiveNotifications, 1)
-        if oldest and oldest.Frame.Parent then
-            ReleaseNotification(oldest)
-        end
-    end
-    
     task.spawn(function()
-        local notif = GetNotificationFrame()
-        notif.Label.Text = text
-        notif.Frame.Visible = true
+        local n = UI:Create("Frame", {
+            Size = UDim2.new(0, 290, 0, 48), 
+            Position = UDim2.new(1, 10, 0.8, 0),
+            BackgroundColor3 = Color3.fromRGB(22, 23, 28), 
+            ZIndex = 20,
+            Parent = UI.Screen
+        })
+        Instance.new("UICorner", n).CornerRadius = UDim.new(0, 10)
+        UI:Create("UIStroke", {Color = Config.Visuals.Accent, Thickness = 1.5, Transparency = 0.3, Parent = n})
+
+        -- accent side bar
+        local bar = UI:Create("Frame", {
+            Size = UDim2.new(0, 4, 1, -16), Position = UDim2.new(0, 8, 0, 8),
+            BackgroundColor3 = Config.Visuals.Accent, ZIndex = 21, Parent = n
+        })
+        Instance.new("UICorner", bar).CornerRadius = UDim.new(1, 0)
         
-        table.insert(ActiveNotifications, notif)
+        UI:Create("TextLabel", {
+            Size = UDim2.new(1, -30, 1, 0), 
+            Position = UDim2.new(0, 20, 0, 0),
+            BackgroundTransparency = 1, 
+            Text = text,
+            TextColor3 = Color3.new(1,1,1), 
+            Font = Enum.Font.GothamMedium, 
+            TextSize = 12,
+            TextXAlignment = Enum.TextXAlignment.Left,
+            TextWrapped = true,
+            ZIndex = 21,
+            Parent = n
+        })
         
-        -- Reposition all active notifications
-        for i, n in ipairs(ActiveNotifications) do
-            local yOffset = 0.85 - ((i - 1) * 0.08)
-            n.Frame:TweenPosition(UDim2.new(0.98, -300, yOffset, 0), "Out", "Back", 0.5)
-        end
-        
+        n:TweenPosition(UDim2.new(0.98, -290, 0.8, 0), "Out", "Back", 0.4)
         task.wait(3)
-        
-        if notif.Frame and notif.Frame.Parent then
-            -- Fade out (optimized tween)
-            local fadeInfo = TweenInfo.new(0.3, Enum.EasingStyle.Quad)
-            TweenService:Create(notif.Frame, fadeInfo, {BackgroundTransparency = 1}):Play()
-            TweenService:Create(notif.Stroke, fadeInfo, {Transparency = 1}):Play()
-            TweenService:Create(notif.Bar, fadeInfo, {BackgroundTransparency = 1}):Play()
-            TweenService:Create(notif.Label, fadeInfo, {TextTransparency = 1}):Play()
-            
-            task.wait(0.3)
-            
-            -- Remove from active list
-            for i, n in ipairs(ActiveNotifications) do
-                if n == notif then
-                    table.remove(ActiveNotifications, i)
-                    break
-                end
-            end
-            
-            ReleaseNotification(notif)
+        if n and n.Parent then
+            n:TweenPosition(UDim2.new(1, 10, 0.8, 0), "In", "Quad", 0.4)
+            task.wait(0.5) 
+            n:Destroy()
         end
     end)
 end
@@ -1012,14 +630,7 @@ UserInputService.InputBegan:Connect(function(input, gameProcessed)
     end
 end)
 
--- Tab System with Icons and Tooltips (Premium Style)
-local TabIcons = {
-    ["Combat"] = "🎯",
-    ["Visuals"] = "👁",
-    ["Physics"] = "⚡",
-    ["Misc"] = "⚙"
-}
-
+-- Tab System
 function UI:CreateTab(name)
     local tabIndex = #UI.Tabs
     local Page = UI:Create("ScrollingFrame", {
@@ -1034,7 +645,7 @@ function UI:CreateTab(name)
     })
     RegisterAccent(function(c) Page.ScrollBarImageColor3 = c end)
     local Layout = UI:Create("UIListLayout", {
-        Padding = UDim.new(0, 10), -- Increased spacing for breathing room
+        Padding = UDim.new(0, 8),
         SortOrder = Enum.SortOrder.LayoutOrder,
         Parent = Page
     })
@@ -1044,8 +655,8 @@ function UI:CreateTab(name)
     end)
     
     local TabButton = UI:Create("TextButton", {
-        Size = UDim2.new(0, 148, 0, 42), -- Slightly taller for icon
-        Position = UDim2.new(0, 10, 0, 16 + (tabIndex * 50)),
+        Size = UDim2.new(0, 148, 0, 38),
+        Position = UDim2.new(0, 10, 0, 16 + (tabIndex * 46)),
         BackgroundColor3 = Color3.fromRGB(20, 20, 26),
         BackgroundTransparency = tabIndex == 0 and 0 or 1,
         Text = "",
@@ -1055,21 +666,10 @@ function UI:CreateTab(name)
     })
     Instance.new("UICorner", TabButton).CornerRadius = UDim.new(0, 10)
 
-    -- Premium glow effect on hover
-    local GlowFrame = UI:Create("Frame", {
-        Size = UDim2.new(1, 0, 1, 0),
-        BackgroundColor3 = Config.Visuals.Accent,
-        BackgroundTransparency = 1,
-        ZIndex = 2,
-        Parent = TabButton
-    })
-    Instance.new("UICorner", GlowFrame).CornerRadius = UDim.new(0, 10)
-    RegisterAccent(function(c) GlowFrame.BackgroundColor3 = c end)
-
     -- Accent selection indicator (left bar)
     local Indicator = UI:Create("Frame", {
-        Size = UDim2.new(0, 3, 0, tabIndex == 0 and 26 or 0),
-        Position = UDim2.new(0, 0, 0.5, tabIndex == 0 and -13 or 0),
+        Size = UDim2.new(0, 3, 0, tabIndex == 0 and 22 or 0),
+        Position = UDim2.new(0, 0, 0.5, tabIndex == 0 and -11 or 0),
         BackgroundColor3 = Config.Visuals.Accent,
         BorderSizePixel = 0,
         ZIndex = 4,
@@ -1078,23 +678,9 @@ function UI:CreateTab(name)
     Instance.new("UICorner", Indicator).CornerRadius = UDim.new(1, 0)
     RegisterAccent(function(c) Indicator.BackgroundColor3 = c end)
 
-    -- Tab Icon
-    local icon = TabIcons[name] or "●"
-    local TabIcon = UI:Create("TextLabel", {
-        Size = UDim2.new(0, 24, 0, 24),
-        Position = UDim2.new(0, 12, 0.5, -12),
-        BackgroundTransparency = 1,
-        Text = icon,
-        TextColor3 = tabIndex == 0 and Config.Visuals.Accent or Color3.fromRGB(150, 140, 160),
-        Font = Enum.Font.GothamBold,
-        TextSize = 16,
-        ZIndex = 5,
-        Parent = TabButton
-    })
-
     local TabLabel = UI:Create("TextLabel", {
-        Size = UDim2.new(1, -48, 1, 0),
-        Position = UDim2.new(0, 42, 0, 0),
+        Size = UDim2.new(1, -20, 1, 0),
+        Position = UDim2.new(0, 16, 0, 0),
         BackgroundTransparency = 1,
         Text = name,
         TextColor3 = tabIndex == 0 and Color3.new(1,1,1) or Color3.fromRGB(150, 140, 160),
@@ -1108,17 +694,13 @@ function UI:CreateTab(name)
     TabButton.MouseEnter:Connect(function()
         if not Page.Visible then
             TweenService:Create(TabButton, TweenInfo.new(0.15), {BackgroundTransparency = 0.5}):Play()
-            TweenService:Create(GlowFrame, TweenInfo.new(0.2), {BackgroundTransparency = 0.85}):Play() -- Subtle glow
             TweenService:Create(TabLabel, TweenInfo.new(0.15), {TextColor3 = Color3.fromRGB(210, 200, 220)}):Play()
-            TweenService:Create(TabIcon, TweenInfo.new(0.15), {TextColor3 = Color3.fromRGB(210, 200, 220)}):Play()
         end
     end)
     TabButton.MouseLeave:Connect(function()
         if not Page.Visible then
             TweenService:Create(TabButton, TweenInfo.new(0.15), {BackgroundTransparency = 1}):Play()
-            TweenService:Create(GlowFrame, TweenInfo.new(0.2), {BackgroundTransparency = 1}):Play()
             TweenService:Create(TabLabel, TweenInfo.new(0.15), {TextColor3 = Color3.fromRGB(150, 140, 160)}):Play()
-            TweenService:Create(TabIcon, TweenInfo.new(0.15), {TextColor3 = Color3.fromRGB(150, 140, 160)}):Play()
         end
     end)
     
@@ -1127,34 +709,21 @@ function UI:CreateTab(name)
         for _, v in pairs(Sidebar:GetChildren()) do 
             if v:IsA("TextButton") then 
                 local lbl = v:FindFirstChildOfClass("TextLabel")
-                local icn = v:FindFirstChild("TextLabel") and v:GetChildren()[3]
                 local ind = v:FindFirstChildOfClass("Frame")
-                local glw = v:FindFirstChild("Frame")
                 if lbl then TweenService:Create(lbl, TweenInfo.new(0.15), {TextColor3 = Color3.fromRGB(150, 140, 160)}):Play() end
-                if icn and icn:IsA("TextLabel") and icn ~= lbl then TweenService:Create(icn, TweenInfo.new(0.15), {TextColor3 = Color3.fromRGB(150, 140, 160)}):Play() end
                 TweenService:Create(v, TweenInfo.new(0.15), {BackgroundTransparency = 1}):Play()
-                if glw and glw ~= ind then TweenService:Create(glw, TweenInfo.new(0.2), {BackgroundTransparency = 1}):Play() end
                 if ind then TweenService:Create(ind, TweenInfo.new(0.15), {Size = UDim2.new(0, 3, 0, 0), Position = UDim2.new(0, 0, 0.5, 0)}):Play() end
             end 
         end
         Page.Visible = true
         TweenService:Create(TabButton, TweenInfo.new(0.15), {BackgroundTransparency = 0}):Play()
-        TweenService:Create(GlowFrame, TweenInfo.new(0.2), {BackgroundTransparency = 0.9}):Play()
         TweenService:Create(TabLabel, TweenInfo.new(0.15), {TextColor3 = Color3.new(1,1,1)}):Play()
-        TweenService:Create(TabIcon, TweenInfo.new(0.15), {TextColor3 = Config.Visuals.Accent}):Play()
-        TweenService:Create(Indicator, TweenInfo.new(0.15), {Size = UDim2.new(0, 3, 0, 26), Position = UDim2.new(0, 0, 0.5, -13)}):Play()
+        TweenService:Create(Indicator, TweenInfo.new(0.15), {Size = UDim2.new(0, 3, 0, 22), Position = UDim2.new(0, 0, 0.5, -11)}):Play()
     end)
     
     if tabIndex == 0 then
         Page.Visible = true
-        TabIcon.TextColor3 = Config.Visuals.Accent
     end
-    
-    RegisterAccent(function(c)
-        if Page.Visible then
-            TabIcon.TextColor3 = c
-        end
-    end)
     
     table.insert(UI.Tabs, Page)
     return Page
@@ -1165,43 +734,26 @@ local ToggleIndicators = {}
 
 -- Helper to animate a switch visual
 local function SetSwitchVisual(track, knob, state)
-    TweenService:Create(track, TweenInfo.new(0.2, Enum.EasingStyle.Quad), {
+    TweenService:Create(track, TweenInfo.new(0.18, Enum.EasingStyle.Quad), {
         BackgroundColor3 = state and Config.Visuals.Accent or Color3.fromRGB(38, 38, 46)
     }):Play()
-    TweenService:Create(knob, TweenInfo.new(0.2, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), {
-        Position = state and UDim2.new(1, -22, 0.5, -9) or UDim2.new(0, 4, 0.5, -9)
+    TweenService:Create(knob, TweenInfo.new(0.18, Enum.EasingStyle.Quad), {
+        Position = state and UDim2.new(1, -20, 0.5, -8) or UDim2.new(0, 4, 0.5, -8)
     }):Play()
 end
 
 function UI:CreateToggle(parent, text, configSection, configKey, callback)
-    local Frame = UI:Create("Frame", {Size = UDim2.new(1, -10, 0, 46), BackgroundColor3 = Color3.fromRGB(18, 18, 24), BackgroundTransparency = 0.1, ZIndex = 4, Parent = parent})
-    Instance.new("UICorner", Frame).CornerRadius = UDim.new(0, 9)
-    local frameStroke = UI:Create("UIStroke", {Color = Color3.fromRGB(32, 32, 40), Thickness = 1, Transparency = 0.6, Parent = Frame})
+    local Frame = UI:Create("Frame", {Size = UDim2.new(1, -10, 0, 42), BackgroundColor3 = Color3.fromRGB(18, 18, 24), ZIndex = 4, Parent = parent})
+    Instance.new("UICorner", Frame).CornerRadius = UDim.new(0, 8)
+    UI:Create("UIStroke", {Color = Color3.fromRGB(32, 32, 40), Thickness = 1, Transparency = 0.4, Parent = Frame})
     
-    local isHovering = false
-    local hoverTweenInfo = TweenInfo.new(0.2, Enum.EasingStyle.Quad) -- Reuse tween info
-    
-    -- Hover glow effect (optimized)
-    Frame.MouseEnter:Connect(function()
-        if isHovering then return end
-        isHovering = true
-        TweenService:Create(frameStroke, hoverTweenInfo, {Transparency = 0.3, Color = Config.Visuals.Accent}):Play()
-        TweenService:Create(Frame, hoverTweenInfo, {BackgroundTransparency = 0}):Play()
-    end)
-    Frame.MouseLeave:Connect(function()
-        if not isHovering then return end
-        isHovering = false
-        TweenService:Create(frameStroke, hoverTweenInfo, {Transparency = 0.6, Color = Color3.fromRGB(32, 32, 40)}):Play()
-        TweenService:Create(Frame, hoverTweenInfo, {BackgroundTransparency = 0.1}):Play()
-    end)
-    
-    local TextLabel = UI:Create("TextLabel", {Size = UDim2.new(0.65, 0, 1, 0), Position = UDim2.new(0, 16, 0, 0), BackgroundTransparency = 1, Text = text, TextColor3 = Color3.fromRGB(230, 232, 237), Font = Enum.Font.GothamMedium, TextSize = 13, TextXAlignment = Enum.TextXAlignment.Left, ZIndex = 5, Parent = Frame})
+    UI:Create("TextLabel", {Size = UDim2.new(0.7, 0, 1, 0), Position = UDim2.new(0, 14, 0, 0), BackgroundTransparency = 1, Text = text, TextColor3 = Color3.fromRGB(225, 226, 232), Font = Enum.Font.Gotham, TextSize = 13, TextXAlignment = Enum.TextXAlignment.Left, ZIndex = 5, Parent = Frame})
     
     local state = Config[configSection][configKey]
 
     -- Switch track
     local Track = UI:Create("TextButton", {
-        Size = UDim2.new(0, 46, 0, 24), Position = UDim2.new(1, -58, 0.5, -12),
+        Size = UDim2.new(0, 44, 0, 22), Position = UDim2.new(1, -56, 0.5, -11),
         BackgroundColor3 = state and Config.Visuals.Accent or Color3.fromRGB(38, 38, 46),
         Text = "", AutoButtonColor = false, ZIndex = 5, Parent = Frame
     })
@@ -1209,8 +761,8 @@ function UI:CreateToggle(parent, text, configSection, configKey, callback)
 
     -- Knob
     local Knob = UI:Create("Frame", {
-        Size = UDim2.new(0, 18, 0, 18),
-        Position = state and UDim2.new(1, -22, 0.5, -9) or UDim2.new(0, 4, 0.5, -9),
+        Size = UDim2.new(0, 16, 0, 16),
+        Position = state and UDim2.new(1, -20, 0.5, -8) or UDim2.new(0, 4, 0.5, -8),
         BackgroundColor3 = isLightColorGlobal(Config.Visuals.Accent) and Color3.fromRGB(80, 80, 90) or Color3.new(1, 1, 1),
         ZIndex = 6, Parent = Track
     })
@@ -1243,31 +795,14 @@ function UI:UpdateToggle(configSection, configKey, state)
 end
 
 function UI:CreateSlider(parent, text, min, max, configSection, configKey, callback)
-    local Frame = UI:Create("Frame", {Size = UDim2.new(1, -10, 0, 60), BackgroundColor3 = Color3.fromRGB(18, 18, 24), BackgroundTransparency = 0.1, ZIndex = 4, Parent = parent})
-    Instance.new("UICorner", Frame).CornerRadius = UDim.new(0, 9)
-    local frameStroke = UI:Create("UIStroke", {Color = Color3.fromRGB(32, 32, 40), Thickness = 1, Transparency = 0.6, Parent = Frame})
+    local Frame = UI:Create("Frame", {Size = UDim2.new(1, -10, 0, 54), BackgroundColor3 = Color3.fromRGB(18, 18, 24), ZIndex = 4, Parent = parent})
+    Instance.new("UICorner", Frame).CornerRadius = UDim.new(0, 8)
+    UI:Create("UIStroke", {Color = Color3.fromRGB(32, 32, 40), Thickness = 1, Transparency = 0.4, Parent = Frame})
     
-    local isHovering = false
-    local hoverTweenInfo = TweenInfo.new(0.2, Enum.EasingStyle.Quad) -- Reuse tween info
+    local Label = UI:Create("TextLabel", {Size = UDim2.new(0.7, 0, 0, 25), Position = UDim2.new(0, 14, 0, 4), BackgroundTransparency = 1, Text = text, TextColor3 = Color3.fromRGB(225, 226, 232), Font = Enum.Font.Gotham, TextSize = 13, TextXAlignment = Enum.TextXAlignment.Left, ZIndex = 5, Parent = Frame})
+    local ValueLabel = UI:Create("TextLabel", {Size = UDim2.new(0, 60, 0, 25), Position = UDim2.new(1, -70, 0, 4), BackgroundTransparency = 1, Text = tostring(Config[configSection][configKey]), TextColor3 = Config.Visuals.Accent, Font = Enum.Font.GothamBold, TextSize = 13, TextXAlignment = Enum.TextXAlignment.Right, ZIndex = 5, Parent = Frame})
     
-    -- Hover glow effect (optimized)
-    Frame.MouseEnter:Connect(function()
-        if isHovering then return end
-        isHovering = true
-        TweenService:Create(frameStroke, hoverTweenInfo, {Transparency = 0.3, Color = Config.Visuals.Accent}):Play()
-        TweenService:Create(Frame, hoverTweenInfo, {BackgroundTransparency = 0}):Play()
-    end)
-    Frame.MouseLeave:Connect(function()
-        if not isHovering then return end
-        isHovering = false
-        TweenService:Create(frameStroke, hoverTweenInfo, {Transparency = 0.6, Color = Color3.fromRGB(32, 32, 40)}):Play()
-        TweenService:Create(Frame, hoverTweenInfo, {BackgroundTransparency = 0.1}):Play()
-    end)
-    
-    local Label = UI:Create("TextLabel", {Size = UDim2.new(0.65, 0, 0, 28), Position = UDim2.new(0, 16, 0, 6), BackgroundTransparency = 1, Text = text, TextColor3 = Color3.fromRGB(230, 232, 237), Font = Enum.Font.GothamMedium, TextSize = 13, TextXAlignment = Enum.TextXAlignment.Left, ZIndex = 5, Parent = Frame})
-    local ValueLabel = UI:Create("TextLabel", {Size = UDim2.new(0, 64, 0, 28), Position = UDim2.new(1, -76, 0, 6), BackgroundTransparency = 1, Text = tostring(Config[configSection][configKey]), TextColor3 = Config.Visuals.Accent, Font = Enum.Font.GothamBold, TextSize = 13, TextXAlignment = Enum.TextXAlignment.Right, ZIndex = 5, Parent = Frame})
-    
-    local SlideBar = UI:Create("Frame", {Size = UDim2.new(1, -32, 0, 6), Position = UDim2.new(0, 16, 0, 42), BackgroundColor3 = Color3.fromRGB(34, 34, 42), ZIndex = 5, Parent = Frame})
+    local SlideBar = UI:Create("Frame", {Size = UDim2.new(1, -28, 0, 6), Position = UDim2.new(0, 14, 0, 38), BackgroundColor3 = Color3.fromRGB(34, 34, 42), ZIndex = 5, Parent = Frame})
     Instance.new("UICorner", SlideBar).CornerRadius = UDim.new(0, 3)
     
     local Fill = UI:Create("Frame", {Size = UDim2.new((Config[configSection][configKey] - min)/(max - min), 0, 1, 0), BackgroundColor3 = Config.Visuals.Accent, ZIndex = 6, Parent = SlideBar})
@@ -1275,7 +810,7 @@ function UI:CreateSlider(parent, text, min, max, configSection, configKey, callb
 
     -- Knob
     local Knob = UI:Create("Frame", {
-        Size = UDim2.new(0, 16, 0, 16), AnchorPoint = Vector2.new(0.5, 0.5),
+        Size = UDim2.new(0, 14, 0, 14), AnchorPoint = Vector2.new(0.5, 0.5),
         Position = UDim2.new(1, 0, 0.5, 0),
         BackgroundColor3 = isLightColorGlobal(Config.Visuals.Accent) and Color3.fromRGB(80, 80, 90) or Color3.new(1, 1, 1), ZIndex = 7, Parent = Fill
     })
@@ -1289,35 +824,24 @@ function UI:CreateSlider(parent, text, min, max, configSection, configKey, callb
     
     local Trigger = UI:Create("TextButton", {Size = UDim2.new(1, 0, 3, 0), Position = UDim2.new(0, 0, -1, 0), BackgroundTransparency = 1, Text = "", ZIndex = 7, Parent = SlideBar})
     
-    local fillTweenInfo = TweenInfo.new(0.08, Enum.EasingStyle.Quad) -- Reuse tween info
-    local knobPulseTweenInfo = TweenInfo.new(0.15, Enum.EasingStyle.Quad) -- Reuse tween info
-    
     local function update(input)
         local pos = math.clamp((input.Position.X - SlideBar.AbsolutePosition.X) / SlideBar.AbsoluteSize.X, 0, 1)
         local val = math.floor(min + (pos * (max - min)))
         Config[configSection][configKey] = val
         ValueLabel.Text = tostring(val)
-        TweenService:Create(Fill, fillTweenInfo, {Size = UDim2.new(pos, 0, 1, 0)}):Play()
+        Fill.Size = UDim2.new(pos, 0, 1, 0)
         if callback then callback(val) end
     end
     
     local draggingSlider = false
     Trigger.InputBegan:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 then 
-            draggingSlider = true 
-            update(input)
-            -- Knob pulse effect
-            TweenService:Create(Knob, knobPulseTweenInfo, {Size = UDim2.new(0, 20, 0, 20)}):Play()
-        end
+        if input.UserInputType == Enum.UserInputType.MouseButton1 then draggingSlider = true update(input) end
     end)
     UserInputService.InputChanged:Connect(function(input)
         if draggingSlider and input.UserInputType == Enum.UserInputType.MouseMovement then update(input) end
     end)
     UserInputService.InputEnded:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 then 
-            draggingSlider = false
-            TweenService:Create(Knob, knobPulseTweenInfo, {Size = UDim2.new(0, 16, 0, 16)}):Play()
-        end
+        if input.UserInputType == Enum.UserInputType.MouseButton1 then draggingSlider = false end
     end)
 end
 
@@ -2390,10 +1914,9 @@ UserInputService.InputBegan:Connect(function(input, gameProcessed)
     end
 end)
 
--- ESP System (Highly Optimized)
+-- ESP System
 local Visuals = {}
 local ESPObjects = {} -- Track all ESP objects for cleanup
-local lastESPUpdate = {} -- Track last update time per player
 
 local function apply3DChams(part)
     local box = Instance.new("BoxHandleAdornment")
@@ -2447,30 +1970,16 @@ function Visuals:DrawESPOnCharacter(player)
         
         local trackingParts = {}
         local function scanParts(rootPart)
-            -- Only track important parts (optimization)
             for _, obj in pairs(rootPart:GetChildren()) do
-                if (obj:IsA("BasePart") or obj:IsA("MeshPart")) and (obj.Name == "Head" or obj.Name == "UpperTorso" or obj.Name == "Torso" or obj.Name == "HumanoidRootPart") then
+                if obj:IsA("BasePart") or obj:IsA("MeshPart") then
                     table.insert(trackingParts, apply3DChams(obj))
                 end
             end
         end
         scanParts(char)
         
-        -- Initialize last update time
-        lastESPUpdate[player.UserId] = 0
-        
         task.spawn(function()
             while bGui.Parent and char:IsDescendantOf(Workspace) and UI.Active do
-                local now = tick()
-                
-                -- Throttle updates to every 0.2 seconds (5 FPS for ESP) instead of 0.1
-                if now - lastESPUpdate[player.UserId] < 0.2 then
-                    task.wait(0.05)
-                    continue
-                end
-                
-                lastESPUpdate[player.UserId] = now
-                
                 local visualsEnabled = Config.Visuals.Enabled
                 
                 -- Control BillboardGui visibility
@@ -2524,7 +2033,7 @@ function Visuals:DrawESPOnCharacter(player)
                 else
                     label.Text = ""
                 end
-                task.wait(0.2) -- Reduced from 0.1 to 0.2 (50% less CPU)
+                task.wait(0.1)
             end
         end)
     end
@@ -2536,9 +2045,8 @@ end
 for _, p in pairs(Players:GetPlayers()) do Visuals:DrawESPOnCharacter(p) end
 Players.PlayerAdded:Connect(function(p) Visuals:DrawESPOnCharacter(p) end)
 
--- Tracers System (Optimized)
+-- Tracers System
 local TracerConnections = {}
-local lastTracerUpdate = {}
 
 local function CreateTracer(player)
     if player == LocalPlayer then return end
@@ -2553,19 +2061,12 @@ local function CreateTracer(player)
         line.Thickness = 1
         line.Transparency = 1
         
-        lastTracerUpdate[player.UserId] = 0
-        
         local connection = RunService.RenderStepped:Connect(function()
             if not UI.Active or not char:IsDescendantOf(Workspace) or not rootPart.Parent then
                 line:Remove()
                 connection:Disconnect()
                 return
             end
-            
-            -- Throttle updates (optimization)
-            local now = tick()
-            if now - lastTracerUpdate[player.UserId] < 0.05 then return end
-            lastTracerUpdate[player.UserId] = now
             
             if Config.Visuals.Enabled and Config.Visuals.Tracers then
                 -- Update color based on team
@@ -2596,35 +2097,8 @@ end
 
 for _, p in pairs(Players:GetPlayers()) do CreateTracer(p) end
 Players.PlayerAdded:Connect(function(p) CreateTracer(p) end)
-                line.Color = Color3.new(espColor.R, espColor.G, espColor.B)
-                
-                local screenPos, onScreen = Camera:WorldToViewportPoint(rootPart.Position)
-                if onScreen then
-                    local screenSize = Camera.ViewportSize
-                    line.From = Vector2.new(screenSize.X / 2, screenSize.Y)
-                    line.To = Vector2.new(screenPos.X, screenPos.Y)
-                    line.Visible = true
-                else
-                    line.Visible = false
-                end
-            else
-                line.Visible = false
-            end
-        end)
-        
-        table.insert(TracerConnections, {line = line, connection = connection})
-    end
-    
-    if player.Character then task.spawn(function() setupTracer(player.Character) end) end
-    player.CharacterAdded:Connect(function(char) task.spawn(function() setupTracer(char) end) end)
-end
 
-for _, p in pairs(Players:GetPlayers()) do CreateTracer(p) end
-Players.PlayerAdded:Connect(function(p) CreateTracer(p) end)
-
--- Health Bars System (Optimized)
-local lastHealthBarUpdate = {}
-
+-- Health Bars System
 local function CreateHealthBar(player)
     if player == LocalPlayer then return end
     
@@ -2652,27 +2126,15 @@ local function CreateHealthBar(player)
         Instance.new("UICorner", frame).CornerRadius = UDim.new(0, 4)
         Instance.new("UICorner", healthBar).CornerRadius = UDim.new(0, 4)
         
-        lastHealthBarUpdate[player.UserId] = 0
-        
         task.spawn(function()
             while billboardGui.Parent and char:IsDescendantOf(Workspace) and UI.Active do
-                local now = tick()
-                
-                -- Throttle updates to every 0.2 seconds
-                if now - lastHealthBarUpdate[player.UserId] < 0.2 then
-                    task.wait(0.05)
-                    continue
-                end
-                
-                lastHealthBarUpdate[player.UserId] = now
-                
                 billboardGui.Enabled = Config.Visuals.Enabled and Config.Visuals.HealthBars
                 if Config.Visuals.Enabled and Config.Visuals.HealthBars then
                     local healthPercent = hum.Health / hum.MaxHealth
                     healthBar.Size = UDim2.new(healthPercent, 0, 1, 0)
                     healthBar.BackgroundColor3 = Color3.new(1 - healthPercent, healthPercent, 0)
                 end
-                task.wait(0.2) -- Reduced from 0.1 to 0.2 (50% less CPU)
+                task.wait(0.1)
             end
             billboardGui:Destroy()
         end)
