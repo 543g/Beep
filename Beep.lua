@@ -218,18 +218,6 @@ local LoadingFill = UI:Create("Frame", {
 })
 Instance.new("UICorner", LoadingFill).CornerRadius = UDim.new(1, 0)
 
-local LoadingVersion = UI:Create("TextLabel", {
-    Size = UDim2.new(0, 100, 0, 20),
-    Position = UDim2.new(0.5, -50, 0.5, 60),
-    BackgroundTransparency = 1,
-    Text = BEEP_VERSION,
-    TextColor3 = Config.Visuals.Accent,
-    Font = Enum.Font.GothamBold,
-    TextSize = 12,
-    ZIndex = 1001,
-    Parent = LoadingScreen
-})
-
 -- Animated loading
 task.spawn(function()
     local loadingSteps = {
@@ -258,10 +246,6 @@ task.spawn(function()
         if obj:IsA("GuiObject") then
             TweenService:Create(obj, TweenInfo.new(0.4), {TextTransparency = 1, BackgroundTransparency = 1}):Play()
         end
-    end
-    -- Make sure LoadingVersion also fades
-    if LoadingVersion then
-        TweenService:Create(LoadingVersion, TweenInfo.new(0.4), {TextTransparency = 1}):Play()
     end
     task.wait(0.5)
     LoadingScreen:Destroy()
