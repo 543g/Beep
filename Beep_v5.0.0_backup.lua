@@ -3,7 +3,7 @@
 -- Stable Version
 
 -- VERSION CONTROL (Update this for each new version)
-local BEEP_VERSION = "v5.2.0"
+local BEEP_VERSION = "v5.0.0"
 
 local StartTime = tick()
 if not game:IsLoaded() then
@@ -44,20 +44,12 @@ local Config = {
         BoxESP = false,
         HeadDot = false,
         Accent = Color3.fromRGB(255, 255, 255), -- White (Theme color)
-        ESPColor = Color3.fromRGB(255, 255, 255), -- ESP color (customizable)
-        -- NEW ESP OPTIONS
-        ShowWeapon = false,  -- Show equipped weapon
-        ShowTeam = false,  -- Show team name/color
-        ShowFlags = true,  -- Show status flags
-        HealthText = false,  -- Show health as text
-        BoxOutline = true,  -- Add outline to boxes
-        ESPMaxDistance = 500,  -- Max render distance
-        FadeWithDistance = true,  -- Fade ESP at distance
+        ESPColor = Color3.fromRGB(255, 255, 255) -- ESP color (customizable)
     },
     Combat = {
         SilentAim = false,
         FOV = 150,
-        Smoothness = 0.35,  -- Increased default smoothing for less snappy aim
+        Smoothness = 0.5,
         TargetPart = "Head",
         ShowFOV = false,
         LockKey = "Q",
@@ -78,11 +70,6 @@ local Config = {
         -- Target Switcher (for Aim Assist)
         TargetSwitcher = false,       -- Auto-switch to next target when current dies
         TargetSwitcherDelay = 0.1,    -- Delay before switching (seconds)
-        -- NEW: Better Aimbot Settings
-        AdaptiveSmoothing = true,  -- Smooth based on distance (less snappy)
-        ShakeReduction = true,  -- Reduce micro-movements
-        Prediction = true,  -- Predict target movement
-        PredictionStrength = 0.18,  -- How much to predict (0-1)
         -- Ragebot
         Ragebot = false,
         RagebotTargetPart = "Head",
@@ -2797,64 +2784,50 @@ local function EnableFly()
     local rootPart = char:FindFirstChild("HumanoidRootPart")
     if not rootPart then return end
     
-    -- Clean up old BodyVelocity/BodyGyro if they exist (legacy cleanup)
-    if FlyBodyVelocity then FlyBodyVelocity:Destroy() FlyBodyVelocity = nil end
-    if FlyBodyGyro then FlyBodyGyro:Destroy() FlyBodyGyro = nil end
+    if FlyBodyVelocity then FlyBodyVelocity:Destroy() end
+    if FlyBodyGyro then FlyBodyGyro:Destroy() end
     
-    -- Modern flight system - direct velocity manipulation
+    FlyBodyVelocity = Instance.new("BodyVelocity")
+    FlyBodyVelocity.Velocity = Vector3.new(0, 0, 0)
+    FlyBodyVelocity.MaxForce = Vector3.new(9e9, 9e9, 9e9)
+    FlyBodyVelocity.Parent = rootPart
+    
+    FlyBodyGyro = Instance.new("BodyGyro")
+    FlyBodyGyro.MaxTorque = Vector3.new(9e9, 9e9, 9e9)
+    FlyBodyGyro.P = 9e4
+    FlyBodyGyro.Parent = rootPart
+    
     if FlyConnection then FlyConnection:Disconnect() end
     FlyConnection = RunService.RenderStepped:Connect(function()
         if not Config.Physics.Fly or not Config.Physics.FlyActive or not UI.Active then
-            -- Reset velocity when disabled
-            if rootPart and rootPart.Parent then
-                rootPart.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
-            end
+            if FlyBodyVelocity then FlyBodyVelocity:Destroy() FlyBodyVelocity = nil end
+            if FlyBodyGyro then FlyBodyGyro:Destroy() FlyBodyGyro = nil end
             if FlyConnection then FlyConnection:Disconnect() FlyConnection = nil end
             return
         end
         
-        -- Get camera vectors for direction calculation
         local cam = Camera.CFrame
-        local lookVector = cam.LookVector
-        local rightVector = cam.RightVector
-        
-        -- Calculate movement direction from WASD input
         local direction = Vector3.new(0, 0, 0)
         
-        if UserInputService:IsKeyDown(Enum.KeyCode.W) then direction = direction + lookVector end
-        if UserInputService:IsKeyDown(Enum.KeyCode.S) then direction = direction - lookVector end
-        if UserInputService:IsKeyDown(Enum.KeyCode.A) then direction = direction - rightVector end
-        if UserInputService:IsKeyDown(Enum.KeyCode.D) then direction = direction + rightVector end
+        if UserInputService:IsKeyDown(Enum.KeyCode.W) then direction = direction + (cam.LookVector) end
+        if UserInputService:IsKeyDown(Enum.KeyCode.S) then direction = direction - (cam.LookVector) end
+        if UserInputService:IsKeyDown(Enum.KeyCode.A) then direction = direction - (cam.RightVector) end
+        if UserInputService:IsKeyDown(Enum.KeyCode.D) then direction = direction + (cam.RightVector) end
         if UserInputService:IsKeyDown(Enum.KeyCode.Space) then direction = direction + Vector3.new(0, 1, 0) end
         if UserInputService:IsKeyDown(Enum.KeyCode.LeftShift) then direction = direction - Vector3.new(0, 1, 0) end
         
-        -- Normalize direction and apply speed
         if direction.Magnitude > 0 then
             direction = direction.Unit
         end
         
-        -- Write velocity directly to AssemblyLinearVelocity (modern method)
-        if rootPart and rootPart.Parent then
-            rootPart.AssemblyLinearVelocity = direction * Config.Physics.FlySpeed
-        end
+        FlyBodyVelocity.Velocity = direction * Config.Physics.FlySpeed
+        FlyBodyGyro.CFrame = cam
     end)
 end
 
 local function DisableFly()
-    -- Clean up legacy objects if they exist
     if FlyBodyVelocity then FlyBodyVelocity:Destroy() FlyBodyVelocity = nil end
     if FlyBodyGyro then FlyBodyGyro:Destroy() FlyBodyGyro = nil end
-    
-    -- Reset velocity
-    local char = LocalPlayer.Character
-    if char then
-        local rootPart = char:FindFirstChild("HumanoidRootPart")
-        if rootPart and rootPart.Parent then
-            rootPart.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
-        end
-    end
-    
-    -- Disconnect loop
     if FlyConnection then FlyConnection:Disconnect() FlyConnection = nil end
 end
 
@@ -3172,8 +3145,10 @@ ExitCheatBtn.MouseButton1Click:Connect(function()
     Config.Combat.Ragebot = false
     Config.Visuals.Enabled = false
     
-    -- Disable fly mode (modern method - reset velocity)
-    DisableFly()
+    -- Disable fly mode
+    if FlyBodyVelocity then FlyBodyVelocity:Destroy() FlyBodyVelocity = nil end
+    if FlyBodyGyro then FlyBodyGyro:Destroy() FlyBodyGyro = nil end
+    if FlyConnection then FlyConnection:Disconnect() FlyConnection = nil end
     
     -- Clean up all ESP objects
     for _, obj in pairs(ESPObjects) do
